@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Student {
+  id               String   @id @default(uuid())
+  name             String
+  roll_number      String   @unique
+  hostel_name      String
+  room_number      String
+  phone            String
+  guardian_contact String
+  status           String   @default("active") // active/inactive
+  current_location String   @default("INSIDE") // INSIDE / OUTSIDE / ON_LEAVE
+  last_entry_time  DateTime?
+  leaves           Leave[]
+  scanEvents       ScanEvent[]
+  attendanceRecords AttendanceRecord[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Leave {
+  id          String   @id @default(uuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id])
+  start_date  DateTime
+  end_date    DateTime
+  reason      String
+  status      String   @default("pending") // pending/approved/rejected
+  approved_by String?
+  createdAt   DateTime @default(now())
+}
+
+model ScanEvent {
+  id               String   @id @default(uuid())
+  studentId        String
+  student          Student  @relation(fields: [studentId], references: [id])
+  timestamp        DateTime
+  type             String   // entry / exit
+  ocr_confidence   Float?
+  model_confidence Float?
+  camera_id        String
+  createdAt        DateTime @default(now())
+}
+
+model AttendanceRecord {
+  id        String   @id @default(uuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  date      DateTime // Need stable date like YYYY-MM-DD represented at 00:00 UTC
+  status    String   // PRESENT / ABSENT / ON_LEAVE
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, date])
+}
