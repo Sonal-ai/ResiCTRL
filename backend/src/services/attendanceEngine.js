@@ -1,9 +1,9 @@
-const prisma = require('../prismaClient');
-const { isBefore, set, isAfter, startOfDay } = require('date-fns');
+import prisma from '../configs/prismaClient.js';
+import { startOfDay } from 'date-fns';
 
 // Process daily attendance at Curfew (e.g. 11:00 PM)
 // This can be triggered by a CRON job every day at 11:05 PM
-exports.processDailyAttendance = async () => {
+export const processDailyAttendance = async () => {
   const today = startOfDay(new Date());
   
   // Get all students

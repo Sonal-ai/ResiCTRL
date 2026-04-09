@@ -1,6 +1,6 @@
-const prisma = require('../prismaClient');
+import prisma from '../configs/prismaClient.js';
 
-exports.getAllStudents = async (req, res, next) => {
+export const getAllStudents = async (req, res, next) => {
   try {
     const students = await prisma.student.findMany({
       orderBy: { name: 'asc' }
@@ -11,7 +11,7 @@ exports.getAllStudents = async (req, res, next) => {
   }
 };
 
-exports.getStudentById = async (req, res, next) => {
+export const getStudentById = async (req, res, next) => {
   try {
     const student = await prisma.student.findUnique({
       where: { id: req.params.id },
@@ -30,7 +30,7 @@ exports.getStudentById = async (req, res, next) => {
   }
 };
 
-exports.createStudent = async (req, res, next) => {
+export const createStudent = async (req, res, next) => {
   try {
     const student = await prisma.student.create({
       data: req.body
@@ -41,7 +41,7 @@ exports.createStudent = async (req, res, next) => {
   }
 };
 
-exports.updateStudent = async (req, res, next) => {
+export const updateStudent = async (req, res, next) => {
   try {
     const student = await prisma.student.update({
       where: { id: req.params.id },
@@ -53,7 +53,7 @@ exports.updateStudent = async (req, res, next) => {
   }
 };
 
-exports.deleteStudent = async (req, res, next) => {
+export const deleteStudent = async (req, res, next) => {
   try {
     await prisma.student.delete({
       where: { id: req.params.id }

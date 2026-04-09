@@ -1,6 +1,6 @@
-const prisma = require('../prismaClient');
+import prisma from '../configs/prismaClient.js';
 
-exports.getMetrics = async (req, res, next) => {
+export const getMetrics = async (req, res, next) => {
   try {
     const totalStudents = await prisma.student.count();
     
@@ -31,7 +31,7 @@ exports.getMetrics = async (req, res, next) => {
   }
 };
 
-exports.getCurfewViolations = async (req, res, next) => {
+export const getCurfewViolations = async (req, res, next) => {
   try {
     const today = new Date();
     // For this example, anyone OUTSIDE and NOT on an approved leave is a violator (assuming curfew time has passed)

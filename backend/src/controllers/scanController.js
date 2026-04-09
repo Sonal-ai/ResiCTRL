@@ -1,10 +1,10 @@
-const prisma = require('../prismaClient');
+import prisma from '../configs/prismaClient.js';
 
 // Since user avoided Redis/BullMQ, we'll process scans directly (synchronous DB update for now),
 // or push to a simple JS array if we want async in-memory queue.
 // For robust scaling in production, we swap this with BullMQ later.
 
-exports.processScan = async (req, res, next) => {
+export const processScan = async (req, res, next) => {
   try {
     const { student_id, timestamp, type, ocr_confidence, model_confidence, camera_id } = req.body;
 
@@ -47,7 +47,7 @@ exports.processScan = async (req, res, next) => {
   }
 };
 
-exports.getRecentScans = async (req, res, next) => {
+export const getRecentScans = async (req, res, next) => {
     try {
         const limit = parseInt(req.query.limit) || 50;
         const scans = await prisma.scanEvent.findMany({

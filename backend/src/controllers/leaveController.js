@@ -1,6 +1,6 @@
-const prisma = require('../prismaClient');
+import prisma from '../configs/prismaClient.js';
 
-exports.getAllLeaves = async (req, res, next) => {
+export const getAllLeaves = async (req, res, next) => {
   try {
     const leaves = await prisma.leave.findMany({
       include: { student: true },
@@ -12,7 +12,7 @@ exports.getAllLeaves = async (req, res, next) => {
   }
 };
 
-exports.applyLeave = async (req, res, next) => {
+export const applyLeave = async (req, res, next) => {
   try {
     const { studentId, start_date, end_date, reason } = req.body;
     const leave = await prisma.leave.create({
@@ -30,7 +30,7 @@ exports.applyLeave = async (req, res, next) => {
   }
 };
 
-exports.approveLeave = async (req, res, next) => {
+export const approveLeave = async (req, res, next) => {
   try {
     const leave = await prisma.leave.update({
       where: { id: req.params.id },
@@ -45,7 +45,7 @@ exports.approveLeave = async (req, res, next) => {
   }
 };
 
-exports.rejectLeave = async (req, res, next) => {
+export const rejectLeave = async (req, res, next) => {
   try {
     const leave = await prisma.leave.update({
       where: { id: req.params.id },

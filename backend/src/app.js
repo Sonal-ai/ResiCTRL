@@ -1,19 +1,71 @@
-const express = require('express');
-const cors = require('cors');
-const routes = require('./routes');
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
+
+// Import modular routes
+import studentRoutes from './routes/studentRoutes.js';
+import leaveRoutes from './routes/leaveRoutes.js';
+import scanRoutes from './routes/scanRoutes.js';
+import dashboardRoutes from './routes/dashboardRoutes.js';
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+// ────────────────────── Security ──────────────────────
+app.use(helmet());
+app.use(
+    cors({
+        origin: process.env.CORS_ORIGIN || "*",
+        credentials: true,
+    })
+);
 
-// Main router
-app.use('/api', routes);
-
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal Server Error', message: err.message });
+// ────────────────────── Rate Limiting ──────────────────────
+// Strict limiter for frontend dashboard and human interactions
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { statusCode: 429, message: "Too many requests, please try again later.", success: false },
 });
 
-module.exports = app;
+// ────────────────────── Body Parsing ──────────────────────
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(cookieParser());
+
+// ────────────────────── Logging ──────────────────────
+if (process.env.NODE_ENV === "development") {
+    app.use(morgan("dev"));
+} else {
+    app.use(morgan("combined"));
+}
+
+// ────────────────────── Routes ──────────────────────
+app.use("/api/health", limiter, (req, res) => res.status(200).json({ status: "OK", timestamp: new Date(), message: "Server is healthy" }));
+
+app.use("/api/students", limiter, studentRoutes);
+app.use("/api/leaves", limiter, leaveRoutes);
+app.use("/api/dashboard", limiter, dashboardRoutes);
+
+// Generous sanity-check limit for camera hardware
+const cameraLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, 
+    max: 1000,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { statusCode: 429, message: "Camera API Hardware Limit Exceeded.", success: false },
+});
+
+app.use("/api/scans", cameraLimiter, scanRoutes);
+
+// ────────────────────── Global Error Handler ──────────────────────
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: "Internal Server Error", message: err.message });
+});
+
+export default app;

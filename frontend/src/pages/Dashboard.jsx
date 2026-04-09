@@ -59,7 +59,7 @@ const Dashboard = () => {
     e.preventDefault();
     setIsSimulating(true);
     try {
-      await axios.post('http://localhost:5000/api/processScan', {
+      await axios.post('http://localhost:5000/api/scans/processScan', {
         student_id: simData.student_id,
         type: simData.type,
         timestamp: new Date().toISOString(),
