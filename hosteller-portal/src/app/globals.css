@@ -4,23 +4,47 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Campus Theme Colors - Vibrant, student friendly */
-  --color-campus-bg: #f8fafc; /* Slate 50 */
-  --color-campus-card: #ffffff;
-  --color-campus-border: #e2e8f0;
-  --color-campus-text: #0f172a; /* Slate 900 */
-  --color-campus-muted: #64748b; /* Slate 500 */
-  --color-campus-accent: #6d28d9; /* Violet 700 */
-  --color-campus-accent-light: #8b5cf6; /* Violet 500 */
-  --color-campus-secondary: #0ea5e9; /* Sky 500 */
+  --color-campus-bg: var(--campus-bg);
+  --color-campus-card: var(--campus-card);
+  --color-campus-border: var(--campus-border);
+  --color-campus-text: var(--campus-text);
+  --color-campus-muted: var(--campus-muted);
+  --color-campus-accent: var(--campus-accent);
+  --color-campus-accent-light: var(--campus-accent-light);
+  --color-campus-secondary: var(--campus-secondary);
   
   --color-success: #10b981;
   --color-danger: #ef4444;
 }
 
 :root {
-  --background: var(--color-campus-bg);
-  --foreground: var(--color-campus-text);
+  --campus-bg: #f8fafc; /* Slate 50 */
+  --campus-card: #ffffff;
+  --campus-border: #e2e8f0;
+  --campus-text: #0f172a; /* Slate 900 */
+  --campus-muted: #64748b; /* Slate 500 */
+  
+  --campus-accent: #6d28d9; /* Violet 700 */
+  --campus-accent-light: #8b5cf6; /* Violet 500 */
+  --campus-secondary: #0ea5e9; /* Sky 500 */
+
+  --background: var(--campus-bg);
+  --foreground: var(--campus-text);
+}
+
+.dark {
+  --campus-bg: #0f172a; /* Slate 900 */
+  --campus-card: #1e293b; /* Slate 800 */
+  --campus-border: #334155; /* Slate 700 */
+  --campus-text: #f8fafc; /* Slate 50 */
+  --campus-muted: #94a3b8; /* Slate 400 */
+  
+  --campus-accent: #a78bfa; /* Violet 400 */
+  --campus-accent-light: #c4b5fd; /* Violet 300 */
+  --campus-secondary: #38bdf8; /* Sky 400 */
+
+  --background: var(--campus-bg);
+  --foreground: var(--campus-text);
 }
 
 body {
@@ -28,14 +52,15 @@ body {
   background: var(--background);
   font-family: var(--font-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @layer utilities {
   .campus-card {
-    @apply bg-white border border-[var(--color-campus-border)] shadow-sm rounded-2xl p-6 transition-all shadow-md border-[var(--color-campus-accent-light)]/30;
+    @apply bg-[var(--color-campus-card)] border border-[var(--color-campus-border)] shadow-sm rounded-2xl p-6 transition-all shadow-[var(--color-campus-accent-light)]/10 dark:shadow-none;
   }
   .campus-input {
-    @apply w-full bg-[var(--color-campus-bg)] border-none rounded-xl px-4 py-3 placeholder-[var(--color-campus-muted)] text-[var(--color-campus-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-campus-accent-light)] transition-all;
+    @apply w-full bg-[var(--color-campus-bg)] border border-[var(--color-campus-border)]/50 rounded-xl px-4 py-3 placeholder-[var(--color-campus-muted)] text-[var(--color-campus-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-campus-accent-light)] transition-all;
   }
   .campus-btn {
     @apply inline-flex items-center justify-center rounded-xl px-5 py-3 font-semibold transition-all focus:outline-none active:scale-95;

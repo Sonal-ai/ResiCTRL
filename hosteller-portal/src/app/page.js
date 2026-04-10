@@ -1,100 +1,55 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { Camera, MapPin, Activity, Loader2, Check } from 'lucide-react';
-import { simulateScan } from '../lib/api';
+"use client";
+import Link from 'next/link';
+import { Home, Compass, MapPin, ChevronRight } from 'lucide-react';
+import { ThemeToggle } from '../components/ThemeToggle';
 
-export default function MobileDashboard() {
-  const [studentId, setStudentId] = useState('1'); // Demo default
-  const [isSimulating, setIsSimulating] = useState(false);
-  const [lastScan, setLastScan] = useState(null);
-
-  const handleScan = async (type) => {
-    setIsSimulating(true);
-    try {
-      const res = await simulateScan({ student_id: parseInt(studentId), type });
-      setLastScan(res.data.scan);
-      // Simulated delay for UI effect
-      setTimeout(() => setIsSimulating(false), 800);
-    } catch (err) {
-      console.error(err);
-      setIsSimulating(false);
-      alert("Scan failed");
-    }
-  };
-
+export default function HostellerLanding() {
   return (
-    <div className="p-6 pb-20 flex flex-col gap-6">
-      <div className="mt-4">
-        <p className="text-[var(--color-campus-muted)] flex items-center gap-2 mb-1">
-          <MapPin className="w-4 h-4" /> Campus View
-        </p>
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--color-campus-text)]">Good Morning, Hosteller</h1>
-      </div>
+    <div className="min-h-[100dvh] bg-[var(--color-campus-bg)] flex flex-col relative overflow-hidden">
+      
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[var(--color-campus-accent)]/10 rounded-full blur-[100px] pointer-events-none transform translate-x-1/3 -translate-y-1/3" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[var(--color-campus-secondary)]/10 rounded-full blur-[100px] pointer-events-none transform -translate-x-1/3 translate-y-1/3" />
 
-      <div className="campus-card bg-gradient-to-br from-indigo-500 to-purple-600 border-none text-white overflow-hidden relative">
-        <div className="absolute top-0 right-0 p-4 opacity-20">
-          <Activity className="w-24 h-24" />
-        </div>
-        
-        <div className="relative z-10">
-          <p className="text-indigo-100 font-medium mb-1">Current Status</p>
-          <div className="flex items-center gap-3 mb-6">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-            </span>
-            <span className="text-2xl font-bold tracking-tight">Active</span>
+      {/* Nav */}
+      <nav className="w-full px-6 py-6 flex items-center justify-between z-10">
+        <div className="flex items-center gap-2">
+          <div className="p-2 bg-[var(--color-campus-accent)] rounded-lg">
+            <Home className="w-5 h-5 text-white" />
           </div>
+          <span className="text-xl font-bold text-[var(--color-campus-text)]">ResiCTRL</span>
+        </div>
+        <ThemeToggle />
+      </nav>
 
-          <div className="space-y-4 pt-4 border-t border-white/20">
-            <p className="text-sm text-indigo-100 mb-2">Simulate ID Card Scan</p>
-            <div className="flex gap-2">
-              <input 
-                type="number" 
-                value={studentId} 
-                onChange={(e) => setStudentId(e.target.value)}
-                className="w-16 bg-white/10 border border-white/20 rounded-xl px-3 text-center text-white placeholder-white/50 focus:outline-none"
-                placeholder="ID"
-              />
-              <button 
-                onClick={() => handleScan('ENTRY')}
-                className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl py-2.5 font-medium transition-colors flex items-center justify-center gap-2"
-                disabled={isSimulating}
-              >
-                Entry
-              </button>
-              <button 
-                onClick={() => handleScan('EXIT')}
-                className="flex-1 bg-black/20 hover:bg-black/30 backdrop-blur-sm rounded-xl py-2.5 font-medium transition-colors flex items-center justify-center gap-2"
-                disabled={isSimulating}
-              >
-                Exit
-              </button>
+      {/* Hero Content */}
+      <main className="flex-1 flex flex-col items-center justify-center text-center px-6 z-10 w-full max-w-lg mx-auto">
+        <div className="inline-flex flex-col items-center justify-center gap-6 mb-8">
+          <div className="relative">
+            <div className="w-24 h-24 bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-[var(--color-campus-accent)]/10 flex items-center justify-center transform rotate-3">
+              <Compass className="w-12 h-12 text-[var(--color-campus-accent)]" />
+            </div>
+            <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-white dark:bg-slate-800 rounded-xl shadow-lg flex items-center justify-center transform -rotate-6">
+              <MapPin className="w-5 h-5 text-[var(--color-campus-secondary)]" />
             </div>
           </div>
         </div>
-      </div>
+        
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--color-campus-text)] mb-4">
+          Your Campus Life, <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-campus-accent)] to-[var(--color-campus-secondary)]">Simplified.</span>
+        </h1>
+        
+        <p className="text-lg text-[var(--color-campus-muted)] mb-10">
+          Manage your leaves, view your attendance, and track your hostel entry and exit all in one place.
+        </p>
 
-      {isSimulating && (
-        <div className="campus-card flex flex-col items-center justify-center py-10 animate-pulse">
-          <Camera className="w-10 h-10 text-[var(--color-campus-accent)] animate-bounce mb-4" />
-          <p className="font-medium text-[var(--color-campus-text)]">Scanning ID...</p>
-        </div>
-      )}
+        <Link href="/login" className="campus-btn-primary w-full text-lg flex items-center justify-center gap-2 py-4 shadow-xl">
+          Enter Portal 
+          <ChevronRight className="w-5 h-5" />
+        </Link>
+      </main>
 
-      {!isSimulating && lastScan && (
-        <div className="campus-card bg-emerald-50 border-emerald-100 flex items-start gap-4 animate-in slide-in-from-bottom-4 duration-500">
-          <div className="p-2 bg-emerald-500 rounded-full text-white mt-1">
-            <Check className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-emerald-900">Scan Successful</h3>
-            <p className="text-sm text-emerald-700 mt-1">
-              Recorded {lastScan.type} scan at {new Date(lastScan.scan_time).toLocaleTimeString()}
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

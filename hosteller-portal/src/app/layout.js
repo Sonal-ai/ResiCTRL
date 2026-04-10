@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import TopNav from "../components/TopNav";
 import "./globals.css";
+import { ThemeProvider } from "../components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,13 +19,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full bg-[var(--color-campus-bg)]">
-        <TopNav />
-        {/* Mobile app-like layout constraint */}
-        <main className="max-w-md mx-auto min-h-[calc(100vh-4rem)] bg-[var(--color-campus-bg)]">
+    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      <body className="min-h-full bg-[var(--color-campus-bg)] transition-colors duration-300">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
-        </main>
+        </ThemeProvider>
       </body>
     </html>
   );

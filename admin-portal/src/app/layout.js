@@ -1,9 +1,6 @@
-'use client';
 import { Geist, Geist_Mono } from "next/font/google";
-import Sidebar from "../components/Sidebar";
 import "./globals.css";
-import { useEffect } from 'react';
-import { loginAdmin } from '../lib/api';
+import { ThemeProvider } from "../components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,21 +12,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const metadata = {
+  title: "ResiCTRL | Admin Portal",
+  description: "Administrative dashboard for ResiCTRL",
+};
 
 export default function RootLayout({ children }) {
-  useEffect(() => {
-    loginAdmin();
-  }, []);
-
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}>
-      <body className="min-h-full flex overflow-hidden">
-        <Sidebar />
-        <main className="flex-1 h-screen overflow-y-auto bg-[var(--color-admin-bg)] p-8">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
-        </main>
+    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className="min-h-full flex overflow-hidden bg-[var(--color-admin-bg)]">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

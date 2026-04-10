@@ -1,103 +1,72 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { Users, UserCheck, UserX, UserMinus, Activity, Zap, Loader2 } from 'lucide-react';
-import MetricCard from '../components/MetricCard';
-import { getDashboardMetrics, getRecentScans } from '../lib/api';
-import { format } from 'date-fns';
+"use client";
+import Link from 'next/link';
+import { ShieldCheck, Activity, Users, ChevronRight } from 'lucide-react';
+import { ThemeToggle } from '../components/ThemeToggle';
 
-export default function DashboardPage() {
-  const [metrics, setMetrics] = useState({
-    totalStudents: 0,
-    studentsInside: 0,
-    studentsOutside: 0,
-    studentsOnLeave: 0
-  });
-  const [recentScans, setRecentScans] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [metricsRes, scansRes] = await Promise.all([
-          getDashboardMetrics().catch(() => ({ data: { totalStudents: 0, studentsInside: 0, studentsOutside: 0, studentsOnLeave: 0 } })),
-          getRecentScans().catch(() => ({ data: [] }))
-        ]);
-        setMetrics(metricsRes.data || metrics);
-        setRecentScans(scansRes.data || []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center h-[80vh]">
-        <Loader2 className="w-8 h-8 text-[var(--color-admin-accent)] animate-spin" />
-      </div>
-    );
-  }
-
+export default function AdminLanding() {
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Overview Dashboard</h1>
-        <p className="text-[var(--color-admin-muted)] text-sm">Real-time metrics and recent activity across the facility.</p>
-      </div>
+    <div className="min-h-screen bg-[var(--color-admin-bg)] flex flex-col items-center justify-center relative overflow-hidden">
+      
+      {/* Background decorations */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[var(--color-admin-accent)]/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#8b5cf6]/20 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard title="Total Students" value={metrics.totalStudents} icon={Users} />
-        <MetricCard title="Inside Hostel" value={metrics.studentsInside} icon={UserCheck} />
-        <MetricCard title="Outside Hostel" value={metrics.studentsOutside} icon={UserX} type="danger" trend="Requires attention" />
-        <MetricCard title="On Approved Leave" value={metrics.studentsOnLeave} icon={UserMinus} />
-      </div>
+      {/* Top Nav */}
+      <nav className="absolute top-0 w-full px-8 py-6 flex items-center justify-between z-10">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-8 h-8 text-[var(--color-admin-accent)]" />
+          <span className="text-xl font-bold tracking-tight text-[var(--color-admin-text)]">ResiCTRL <span className="font-light">Admin</span></span>
+        </div>
+        <ThemeToggle />
+      </nav>
 
-      <div className="admin-card mt-4 overflow-hidden">
-        <div className="p-6 border-b border-[var(--color-admin-border)] flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <Activity className="w-5 h-5 text-[var(--color-admin-accent)]" />
-            Recent Scans
-          </h2>
+      {/* Hero Content */}
+      <main className="z-10 flex flex-col items-center text-center px-4 max-w-3xl">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--color-admin-accent)]/30 bg-[var(--color-admin-accent)]/10 text-[var(--color-admin-accent)] text-sm font-medium mb-8">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-admin-accent)] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-admin-accent)]"></span>
+          </span>
+          System Online
         </div>
-        <div className="overflow-x-auto">
-          {recentScans.length === 0 ? (
-            <div className="p-8 text-center text-[var(--color-admin-muted)]">No recent scans today</div>
-          ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#0B0D10] text-[#64748B] text-xs uppercase tracking-wider">
-                  <th className="px-6 py-4 font-medium">Student Name</th>
-                  <th className="px-6 py-4 font-medium">Roll Number</th>
-                  <th className="px-6 py-4 font-medium">Type</th>
-                  <th className="px-6 py-4 font-medium">Time</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--color-admin-border)] text-sm">
-                {recentScans.map((scan) => (
-                  <tr key={scan.id} className="hover:bg-[#20242c]/50 transition-colors">
-                    <td className="px-6 py-4 text-white font-medium">{scan.student.name}</td>
-                    <td className="px-6 py-4 text-[var(--color-admin-muted)]">{scan.student.roll_number}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                        scan.type === 'ENTRY' ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]' 
-                        : 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]'
-                      }`}>
-                        {scan.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-[var(--color-admin-muted)]">
-                      {format(new Date(scan.scan_time), 'PPp')}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+        
+        <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-[var(--color-admin-text)] mb-6 drop-shadow-sm">
+          Intelligent <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-admin-accent)] to-[#8b5cf6]">Hostel Management</span>
+        </h1>
+        
+        <p className="text-lg text-[var(--color-admin-muted)] mb-10 max-w-2xl">
+          Complete oversight of facility operations. Monitor real-time student activity, automate leave approvals, and maintain campus security with precision.
+        </p>
+
+        <div className="flex gap-4">
+          <Link href="/login" className="admin-btn-primary flex items-center gap-2 group text-base px-6 py-3">
+            Admin Login
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
-      </div>
+
+        <div className="grid grid-cols-3 gap-8 mt-24 border-t border-[var(--color-admin-border)] pt-12 w-full">
+          <div className="flex flex-col items-center gap-3">
+            <div className="p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-[var(--color-admin-border)]">
+              <Activity className="w-6 h-6 text-[var(--color-admin-accent)]" />
+            </div>
+            <p className="text-sm font-medium text-[var(--color-admin-text)]">Real-time Analytics</p>
+          </div>
+          <div className="flex flex-col items-center gap-3">
+            <div className="p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-[var(--color-admin-border)]">
+              <Users className="w-6 h-6 text-[#10b981]" />
+            </div>
+            <p className="text-sm font-medium text-[var(--color-admin-text)]">Live Occupancy</p>
+          </div>
+          <div className="flex flex-col items-center gap-3">
+            <div className="p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-[var(--color-admin-border)]">
+              <ShieldCheck className="w-6 h-6 text-[#8b5cf6]" />
+            </div>
+            <p className="text-sm font-medium text-[var(--color-admin-text)]">Secure Access</p>
+          </div>
+        </div>
+      </main>
+
     </div>
   );
 }

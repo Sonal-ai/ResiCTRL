@@ -2,10 +2,10 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: 'http://localhost:5000/api', // Backend URL
-  withCredentials: true // For JWT cookies
+  withCredentials: true // For JWT cookies if used
 });
 
-// Auto-inject token if we store it
+// Auto-inject token
 api.interceptors.request.use((config) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   if (token) {
@@ -14,22 +14,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export const loginAdmin = async () => {
-  try {
-    // Attempt login, or register
-    const res = await api.post('/auth/login', { email: 'admin@hostel.com', password: 'password123' });
-    localStorage.setItem('token', res.data.data.token || res.data.token); // Adjust depending on backend
-  } catch (err) {
-    // If login fails, try register
-    try {
-      const res = await api.post('/auth/register', { email: 'admin@hostel.com', password: 'password123', role: 'WARDEN' });
-      localStorage.setItem('token', res.data.data.token || res.data.token);
-    } catch (e) {
-      console.error('Auth setup failed');
-    }
+export const adminLogin = async (credentials) => {
+  const res = await api.post('/auth/login', credentials);
+  const token = res.data.data?.token || res.data?.token;
+  if (token) {
+    localStorage.setItem('token', token);
   }
+  return res.data;
 };
 
+export const adminLogout = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('token');
+  }
+};
 
 export const getDashboardMetrics = () => api.get('/dashboard/metrics');
 export const getViolations = () => api.get('/dashboard/violations');

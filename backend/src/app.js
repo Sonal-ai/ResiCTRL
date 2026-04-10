@@ -26,11 +26,20 @@ app.use(
 // ────────────────────── Rate Limiting ──────────────────────
 // Strict limiter for frontend dashboard and human interactions
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
+    windowMs: 60 * 1000, // 1 minute
     max: 100,
     standardHeaders: true,
     legacyHeaders: false,
     message: { statusCode: 429, message: "Too many requests, please try again later.", success: false },
+});
+
+// Generous sanity-check limit for camera hardware
+const cameraLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, 
+    max: 1000,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { statusCode: 429, message: "Camera API Hardware Limit Exceeded.", success: false },
 });
 
 // ────────────────────── Body Parsing ──────────────────────
@@ -46,24 +55,13 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // ────────────────────── Routes ──────────────────────
-app.use("/api/health", limiter, (req, res) => res.status(200).json({ status: "OK", timestamp: new Date(), message: "Server is healthy" }));
+app.use("/api/health",   limiter, (req, res) => res.status(200).json({ status: "OK", timestamp: new Date(), message: "Server is healthy" }));
 
-app.use("/api/auth", limiter, authRoutes);
-
+app.use("/api/auth",     limiter, authRoutes);
 app.use("/api/students", limiter, studentRoutes);
-app.use("/api/leaves", limiter, leaveRoutes);
-app.use("/api/dashboard", limiter, dashboardRoutes);
-
-// Generous sanity-check limit for camera hardware
-const cameraLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, 
-    max: 1000,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { statusCode: 429, message: "Camera API Hardware Limit Exceeded.", success: false },
-});
-
-app.use("/api/scans", cameraLimiter, scanRoutes);
+app.use("/api/leaves",   limiter, leaveRoutes);
+app.use("/api/dashboard",limiter, dashboardRoutes);
+app.use("/api/scans",    cameraLimiter, scanRoutes);
 
 // ────────────────────── Global Error Handler ──────────────────────
 app.use((err, req, res, next) => {
