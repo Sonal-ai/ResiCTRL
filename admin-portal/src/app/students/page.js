@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Search, Plus, Filter, MoreVertical, Loader2, X } from 'lucide-react';
-import { getAllStudents, createStudent } from '../../lib/api';
+import { getAllHostellers, createHosteller } from '../../lib/api';
 
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
@@ -13,6 +13,9 @@ export default function StudentsPage() {
   const [formData, setFormData] = useState({
     name: '',
     roll_number: '',
+    email: '',
+    dob: '',
+    gender: 'M',
     hostel_name: '',
     room_number: '',
     phone: '',
@@ -22,7 +25,7 @@ export default function StudentsPage() {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      const res = await getAllStudents();
+      const res = await getAllHostellers();
       setStudents(res.data);
     } catch (error) {
       console.error("Error fetching students", error);
@@ -39,9 +42,9 @@ export default function StudentsPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await createStudent(formData);
+      await createHosteller(formData);
       setIsModalOpen(false);
-      setFormData({ name: '', roll_number: '', hostel_name: '', room_number: '', phone: '', guardian_contact: '' });
+      setFormData({ name: '', roll_number: '', email: '', dob: '', gender: 'M', hostel_name: '', room_number: '', phone: '', guardian_contact: '' });
       fetchStudents();
     } catch (error) {
       console.error("Failed to add student", error);
@@ -157,6 +160,21 @@ export default function StudentsPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-[var(--color-admin-muted)] uppercase tracking-wider">Roll Number</label>
                   <input required type="text" className="admin-input" placeholder="e.g. 2K21/CO/123" value={formData.roll_number} onChange={e => setFormData({...formData, roll_number: e.target.value})} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[var(--color-admin-muted)] uppercase tracking-wider">Email</label>
+                  <input required type="email" className="admin-input" placeholder="e.g. alias@dtu.ac.in" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[var(--color-admin-muted)] uppercase tracking-wider">Date of Birth</label>
+                  <input required type="date" className="admin-input" value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[var(--color-admin-muted)] uppercase tracking-wider">Gender</label>
+                  <select required className="admin-input" value={formData.gender} onChange={e => setFormData({...formData, gender: e.target.value})}>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                  </select>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-[var(--color-admin-muted)] uppercase tracking-wider">Hostel</label>

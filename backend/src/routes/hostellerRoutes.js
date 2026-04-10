@@ -2,9 +2,10 @@ import express from 'express';
 import { getAllHostellers, getHostellerById, createHosteller, deleteHosteller, uploadBulkCSV } from '../controllers/hostellerController.js';
 import { protect, authorizeRoles } from '../middlewares/authMiddleware.js';
 import multer from 'multer';
+import os from 'os';
 
-// Use local temporal storage for CSVs
-const upload = multer({ dest: 'uploads/' });
+// Use Vercel-safe temporal storage for CSVs
+const upload = multer({ dest: os.tmpdir() });
 
 const router = express.Router();
 
