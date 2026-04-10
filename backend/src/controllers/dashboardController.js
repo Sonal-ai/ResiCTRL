@@ -1,7 +1,7 @@
 import * as studentRepository from '../models/repositories/studentRepository.js';
 import * as leaveRepository from '../models/repositories/leaveRepository.js';
 
-export const getMetrics = async (req, res, next) => {
+export const getMetrics = async (req, res) => {
   try {
     const totalStudents = await studentRepository.countStudents();
     
@@ -20,11 +20,11 @@ export const getMetrics = async (req, res, next) => {
       studentsOnLeave
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message || 'Server Error' });
   }
 };
 
-export const getCurfewViolations = async (req, res, next) => {
+export const getCurfewViolations = async (req, res) => {
   try {
     const today = new Date();
     // For this example, anyone OUTSIDE and NOT on an approved leave is a violator (assuming curfew time has passed)
@@ -33,6 +33,6 @@ export const getCurfewViolations = async (req, res, next) => {
 
     res.json(violators);
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message || 'Server Error' });
   }
 };

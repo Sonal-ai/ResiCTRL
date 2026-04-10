@@ -4,7 +4,7 @@ import * as attendanceRepository from '../models/repositories/attendanceReposito
 import { processScanSchema } from '../models/validations/scanSchemas.js';
 import { startOfDay, subDays } from 'date-fns';
 
-export const processScan = async (req, res, next) => {
+export const processScan = async (req, res) => {
   try {
     const parsed = processScanSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -57,16 +57,16 @@ export const processScan = async (req, res, next) => {
 
     res.status(200).json({ message: 'Scan processed successfully', scanEvent });
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message || 'Server Error' });
   }
 };
 
-export const getRecentScans = async (req, res, next) => {
+export const getRecentScans = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 50;
         const scans = await scanEventRepository.getRecentScans(limit);
         res.json(scans);
     } catch (error) {
-        next(error);
+        res.status(500).json({ success: false, message: error.message || 'Server Error' });
     }
 };

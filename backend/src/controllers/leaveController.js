@@ -1,16 +1,16 @@
 import * as leaveRepository from '../models/repositories/leaveRepository.js';
 import { applyLeaveSchema } from '../models/validations/leaveSchemas.js';
 
-export const getAllLeaves = async (req, res, next) => {
+export const getAllLeaves = async (req, res) => {
   try {
     const leaves = await leaveRepository.getAllLeaves();
     res.json(leaves);
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message || 'Server Error' });
   }
 };
 
-export const applyLeave = async (req, res, next) => {
+export const applyLeave = async (req, res) => {
   try {
     const parsed = applyLeaveSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -25,11 +25,11 @@ export const applyLeave = async (req, res, next) => {
     });
     res.status(201).json(leave);
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message || 'Server Error' });
   }
 };
 
-export const approveLeave = async (req, res, next) => {
+export const approveLeave = async (req, res) => {
   try {
     const leave = await leaveRepository.updateLeaveStatus(
       req.params.id,
@@ -38,11 +38,11 @@ export const approveLeave = async (req, res, next) => {
     );
     res.json(leave);
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message || 'Server Error' });
   }
 };
 
-export const rejectLeave = async (req, res, next) => {
+export const rejectLeave = async (req, res) => {
   try {
     const leave = await leaveRepository.updateLeaveStatus(
       req.params.id,
@@ -51,6 +51,6 @@ export const rejectLeave = async (req, res, next) => {
     );
     res.json(leave);
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message || 'Server Error' });
   }
 };

@@ -10,6 +10,8 @@ const server = app.listen(PORT, async () => {
     try {
         await prisma.$connect();
         console.log(`📦 Database connected successfully!`);
+        configureCloudinary();
+        console.log(`☁️  Cloudinary configured successfully!`);
     } catch (error) {
         console.error(`❌ Database connection failed:`, error);
     }

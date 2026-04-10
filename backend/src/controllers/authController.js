@@ -5,7 +5,7 @@ import { generateToken } from '../utils/generateToken.js';
 
 // @desc    Register a generic User (For attendants/wardens manually, hostellers via script)
 // @route   POST /api/auth/register
-export const registerUser = async (req, res, next) => {
+export const registerUser = async (req, res) => {
   try {
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -35,13 +35,13 @@ export const registerUser = async (req, res, next) => {
       data: { id: user.id, email: user.email, role: user.role }
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message || 'Server Error' });
   }
 };
 
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
-export const loginUser = async (req, res, next) => {
+export const loginUser = async (req, res) => {
   try {
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -62,7 +62,7 @@ export const loginUser = async (req, res, next) => {
       res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message || 'Server Error' });
   }
 };
 
@@ -78,7 +78,7 @@ export const logoutUser = (req, res) => {
 
 // @desc    Get current logged in user profile
 // @route   GET /api/auth/profile
-export const getUserProfile = async (req, res, next) => {
+export const getUserProfile = async (req, res) => {
   try {
     const user = await userRepository.findUserById(req.user.id, true);
 
@@ -89,6 +89,6 @@ export const getUserProfile = async (req, res, next) => {
       res.status(404).json({ success: false, message: 'User not found' });
     }
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message || 'Server Error' });
   }
 };
