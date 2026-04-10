@@ -35,7 +35,7 @@ export const getRecentScans = () => api.get('/scans/recent');
 // Apply leave
 export const applyLeave = (data) => api.post('/leaves/apply', data);
 
-// Simulate personal scan (student_id, type)
+// Simulate personal scan (hosteller_id, type)
 export const simulateScan = (data) => api.post('/scans/processScan', data);
 
 export default api;

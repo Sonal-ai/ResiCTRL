@@ -1,13 +1,19 @@
 import express from 'express';
-import { registerUser, loginUser, logoutUser, getUserProfile } from '../controllers/authController.js';
+import { registerAdmin, loginAdmin, loginHosteller, logoutUser, updatePassword } from '../controllers/authController.js';
 import { protect, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/register', registerUser);
-router.post('/login', loginUser);
+router.post('/register', registerAdmin);
+router.post('/login/admin', loginAdmin);
+router.post('/login/hosteller', loginHosteller);
 router.post('/logout', logoutUser);
 
-router.get('/profile', protect, getUserProfile);
+router.post('/update-password', protect, updatePassword);
+
+// Add a quick profile route to test auth
+router.get('/profile', protect, (req, res) => {
+  res.json({ success: true, data: req.user });
+});
 
 export default router;

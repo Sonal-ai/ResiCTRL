@@ -2,7 +2,7 @@ import prisma from '../../configs/prismaClient.js';
 
 export const getAllLeaves = async () => {
   return await prisma.leave.findMany({
-    include: { student: true },
+    include: { hosteller: true },
     orderBy: { createdAt: 'desc' }
   });
 };
@@ -31,10 +31,10 @@ export const countActiveLeaves = async (today) => {
   });
 };
 
-export const findActiveLeaveForStudent = async (studentId, today) => {
+export const findActiveLeaveForHosteller = async (hostellerId, today) => {
   return await prisma.leave.findFirst({
     where: {
-      studentId,
+      hostellerId,
       status: 'approved',
       start_date: { lte: today },
       end_date: { gte: today }

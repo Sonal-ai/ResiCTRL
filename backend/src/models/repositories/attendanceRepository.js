@@ -1,8 +1,8 @@
 import prisma from '../../configs/prismaClient.js';
 
-export const getAttendanceRecord = async (studentId, date) => {
+export const getAttendanceRecord = async (hostellerId, date) => {
   return await prisma.attendanceRecord.findUnique({
-    where: { studentId_date: { studentId, date } }
+    where: { hostellerId_date: { hostellerId, date } }
   });
 };
 
@@ -13,14 +13,14 @@ export const updateAttendanceStatus = async (id, status) => {
   });
 };
 
-export const upsertAttendanceRecord = async (studentId, date, status) => {
+export const upsertAttendanceRecord = async (hostellerId, date, status) => {
   return await prisma.attendanceRecord.upsert({
     where: {
-      studentId_date: { studentId, date }
+      hostellerId_date: { hostellerId, date }
     },
     update: { status },
     create: {
-      studentId,
+      hostellerId,
       date,
       status
     }

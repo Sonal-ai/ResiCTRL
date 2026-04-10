@@ -32,7 +32,7 @@ export const adminLogout = () => {
 export const getDashboardMetrics = () => api.get('/dashboard/metrics');
 export const getViolations = () => api.get('/dashboard/violations');
 export const getRecentScans = () => api.get('/scans/recent');
-export const getAllStudents = () => api.get('/students');
+export const getAllHostellers = () => api.get('/hostellers');
 
 // For leaves
 export const getLeaves = () => api.get('/leaves');
@@ -41,7 +41,8 @@ export const updateLeaveStatus = (id, status) => {
   return api.put(`/leaves/${id}/reject`);
 };
 
-// For students
-export const createStudent = (data) => api.post('/students', data);
+// For hostellers
+export const createHosteller = (data) => api.post('/hostellers', data);
+export const uploadHostellerCSV = (formData) => api.post('/hostellers/upload-csv', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 
 export default api;

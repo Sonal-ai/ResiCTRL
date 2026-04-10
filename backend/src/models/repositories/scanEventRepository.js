@@ -8,6 +8,6 @@ export const getRecentScans = async (limit) => {
   return await prisma.scanEvent.findMany({
     take: limit,
     orderBy: { timestamp: 'desc' },
-    include: { student: { select: { name: true, roll_number: true, room_number: true } } }
+    include: { hosteller: { select: { name: true, roll_number: true, room_number: true } } }
   });
 };

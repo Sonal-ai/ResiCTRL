@@ -7,76 +7,97 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Admin {
   id             String   @id @default(uuid())
   email          String   @unique
   password       String
-  role           String
+  name           String
+  phone          String?
+  designation    String   @default("WARDEN") // e.g., WARDEN, RESI_WARDEN, ATTENDANT
+  
+  // Optional for staff living in campus
+  hostel_name    String?
+  room_number    String?
+  
+  status         String   @default("active")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
   approvedLeaves Leave[]  @relation("ApprovedLeaves")
-  student        Student?
 }
 
-model Student {
-  id                         String             @id @default(uuid())
-  userId                     String             @unique
-  name                       String
-  roll_number                String             @unique
-  father_name                String?
-  dob                        DateTime?
-  hostel_name                String
-  block                      String?
-  floor                      String?
-  room_number                String
-  phone                      String
-  guardian_contact           String
-  image_url                  String?
-  status                     String             @default("active")
-  current_location           String             @default("INSIDE")
-  last_entry_time            DateTime?
-  absent_without_leave_count Int                @default(0)
-  total_absent_count         Int                @default(0)
-  createdAt                  DateTime           @default(now())
-  updatedAt                  DateTime           @updatedAt
-  attendanceRecords          AttendanceRecord[]
-  leaves                     Leave[]
-  scanEvents                 ScanEvent[]
-  user                       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Hosteller {
+  id               String   @id @default(uuid())
+  roll_number      String   @unique
+  name             String
+  email            String   @unique
+  password         String
+  dob              DateTime
+  gender           String
+
+  phone            String   @default("")
+  guardian_name    String?
+  guardian_contact String   @default("")
+
+  hostel_name      String
+  room_number      String
+  block            String?
+  floor            String?
+  
+  total_working_days Int @default(0)
+  total_present_days Int @default(0)
+
+  image_url        String?
+  status           String   @default("active")
+  current_location String   @default("INSIDE")
+  last_entry_time  DateTime?
+  
+  absent_without_leave_count Int @default(0)
+  total_absent_count         Int @default(0)
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  leaves            Leave[]
+  scanEvents        ScanEvent[]
+  attendanceRecords AttendanceRecord[]
 }
 
 model Leave {
-  id           String   @id @default(uuid())
-  studentId    String
+  id           String    @id @default(uuid())
+  hostellerId  String
   start_date   DateTime
   end_date     DateTime
   reason       String
-  status       String   @default("pending")
+  status       String    @default("pending")
   approvedById String?
-  createdAt    DateTime @default(now())
-  approvedBy   User?    @relation("ApprovedLeaves", fields: [approvedById], references: [id])
-  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  
+  approvedBy   Admin?      @relation("ApprovedLeaves", fields: [approvedById], references: [id])
+  hosteller    Hosteller   @relation(fields: [hostellerId], references: [id], onDelete: Cascade)
 }
 
 model ScanEvent {
-  id               String   @id @default(uuid())
-  studentId        String
+  id               String    @id @default(uuid())
+  hostellerId      String
   timestamp        DateTime
   type             String
   ocr_confidence   Float?
   model_confidence Float?
   camera_id        String
-  createdAt        DateTime @default(now())
-  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt        DateTime  @default(now())
+  
+  hosteller        Hosteller @relation(fields: [hostellerId], references: [id], onDelete: Cascade)
 }
 
 model AttendanceRecord {
-  id        String   @id @default(uuid())
-  studentId String
-  date      DateTime
-  status    String
-  createdAt DateTime @default(now())
-  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id          String   @id @default(uuid())
+  hostellerId String
+  date        DateTime
+  status      String
+  createdAt   DateTime @default(now())
+  
+  hosteller   Hosteller @relation(fields: [hostellerId], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, date])
+  @@unique([hostellerId, date])
 }

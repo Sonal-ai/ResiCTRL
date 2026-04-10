@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 
 // Import modular routes
-import studentRoutes from './routes/studentRoutes.js';
+import hostellerRoutes from './routes/hostellerRoutes.js';
 import leaveRoutes from './routes/leaveRoutes.js';
 import scanRoutes from './routes/scanRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
@@ -58,7 +58,7 @@ if (process.env.NODE_ENV === "development") {
 app.use("/api/health",   limiter, (req, res) => res.status(200).json({ status: "OK", timestamp: new Date(), message: "Server is healthy" }));
 
 app.use("/api/auth",     limiter, authRoutes);
-app.use("/api/students", limiter, studentRoutes);
+app.use("/api/hostellers", limiter, hostellerRoutes);
 app.use("/api/leaves",   limiter, leaveRoutes);
 app.use("/api/dashboard",limiter, dashboardRoutes);
 app.use("/api/scans",    cameraLimiter, scanRoutes);
