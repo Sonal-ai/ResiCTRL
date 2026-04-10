@@ -1,23 +1,16 @@
-import prisma from '../configs/prismaClient.js';
+import * as studentRepository from '../models/repositories/studentRepository.js';
+import * as leaveRepository from '../models/repositories/leaveRepository.js';
+import * as attendanceRepository from '../models/repositories/attendanceRepository.js';
 import { startOfDay } from 'date-fns';
 
 // Triggered by CRON at 11:05 PM
 export const processDailyAttendance = async () => {
   const today = startOfDay(new Date()); // UTC midnight representation of today
   
-  const students = await prisma.student.findMany({
-    where: { status: 'active' }
-  });
+  const students = await studentRepository.findActiveStudents();
 
   for (const student of students) {
-    const activeLeave = await prisma.leave.findFirst({
-      where: {
-        studentId: student.id,
-        status: 'approved',
-        start_date: { lte: new Date() },
-        end_date: { gte: today }
-      }
-    });
+    const activeLeave = await leaveRepository.findActiveLeaveForStudent(student.id, new Date());
 
     let attendanceStatus = 'ABSENT';
     let withoutLeaveIncrement = 0;
@@ -35,32 +28,17 @@ export const processDailyAttendance = async () => {
     }
 
     // Upsert the record for today
-    const existingRecord = await prisma.attendanceRecord.findUnique({
-      where: { studentId_date: { studentId: student.id, date: today } }
-    });
+    const existingRecord = await attendanceRepository.getAttendanceRecord(student.id, today);
 
     // If it doesn't already exist or wasn't processed yet
     if (!existingRecord || existingRecord.status !== attendanceStatus) {
-        await prisma.attendanceRecord.upsert({
-          where: {
-            studentId_date: { studentId: student.id, date: today }
-          },
-          update: { status: attendanceStatus },
-          create: {
-            studentId: student.id,
-            date: today,
-            status: attendanceStatus
-          }
-        });
+        await attendanceRepository.upsertAttendanceRecord(student.id, today, attendanceStatus);
 
         // Update student tracking metrics
         if (withoutLeaveIncrement > 0 || totalAbsentIncrement > 0) {
-            await prisma.student.update({
-                where: { id: student.id },
-                data: {
-                    absent_without_leave_count: { increment: withoutLeaveIncrement },
-                    total_absent_count: { increment: totalAbsentIncrement }
-                }
+            await studentRepository.updateStudent(student.id, {
+                absent_without_leave_count: { increment: withoutLeaveIncrement },
+                total_absent_count: { increment: totalAbsentIncrement }
             });
         }
     }

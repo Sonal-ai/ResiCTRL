@@ -1,26 +1,78 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Executive Theme Colors */
+  --color-admin-bg: #0f1115; /* Slate 950 */
+  --color-admin-card: #181b21; /* Slate 900 */
+  --color-admin-border: #2B303B;
+  --color-admin-text: #E2E8F0;
+  --color-admin-muted: #94A3B8;
+  --color-admin-accent: #38bdf8; /* Sky 400 */
+  --color-admin-accent-hover: #0ea5e9; /* Sky 500 */
+  
+  --color-success: #10b981; /* Emerald 500 */
+  --color-danger: #ef4444; /* Red 500 */
+  --color-warning: #f59e0b; /* Amber 500 */
+}
+
+/* Base configuration for an elegant dark mode */
+:root {
+  --background: var(--color-admin-bg);
+  --foreground: var(--color-admin-text);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: var(--color-admin-bg);
+    --foreground: var(--color-admin-text);
   }
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  font-family: var(--font-sans), sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar for Admin panel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-admin-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-admin-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-admin-muted);
+}
+
+@layer utilities {
+  .admin-card {
+    @apply bg-[var(--color-admin-card)] border border-[var(--color-admin-border)] shadow-sm rounded-xl;
+  }
+  .admin-input {
+    @apply w-full bg-[#0B0D10] border border-[var(--color-admin-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--color-admin-text)] placeholder-[var(--color-admin-muted)] focus:outline-none focus:border-[var(--color-admin-accent)] focus:ring-1 focus:ring-[var(--color-admin-accent)] transition-all;
+  }
+  .admin-btn {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--color-admin-bg)];
+  }
+  .admin-btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--color-admin-bg)] bg-[var(--color-admin-accent)] text-white hover:bg-[var(--color-admin-accent-hover)] focus:ring-[var(--color-admin-accent)];
+  }
+  .admin-btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--color-admin-bg)] bg-[var(--color-admin-card)] text-[var(--color-admin-text)] border border-[var(--color-admin-border)] hover:bg-[#20242c] focus:ring-[var(--color-admin-border)];
+  }
 }

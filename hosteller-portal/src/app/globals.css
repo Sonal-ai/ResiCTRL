@@ -1,26 +1,46 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Campus Theme Colors - Vibrant, student friendly */
+  --color-campus-bg: #f8fafc; /* Slate 50 */
+  --color-campus-card: #ffffff;
+  --color-campus-border: #e2e8f0;
+  --color-campus-text: #0f172a; /* Slate 900 */
+  --color-campus-muted: #64748b; /* Slate 500 */
+  --color-campus-accent: #6d28d9; /* Violet 700 */
+  --color-campus-accent-light: #8b5cf6; /* Violet 500 */
+  --color-campus-secondary: #0ea5e9; /* Sky 500 */
+  
+  --color-success: #10b981;
+  --color-danger: #ef4444;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: var(--color-campus-bg);
+  --foreground: var(--color-campus-text);
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  font-family: var(--font-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer utilities {
+  .campus-card {
+    @apply bg-white border border-[var(--color-campus-border)] shadow-sm rounded-2xl p-6 transition-all shadow-md border-[var(--color-campus-accent-light)]/30;
+  }
+  .campus-input {
+    @apply w-full bg-[var(--color-campus-bg)] border-none rounded-xl px-4 py-3 placeholder-[var(--color-campus-muted)] text-[var(--color-campus-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-campus-accent-light)] transition-all;
+  }
+  .campus-btn {
+    @apply inline-flex items-center justify-center rounded-xl px-5 py-3 font-semibold transition-all focus:outline-none active:scale-95;
+  }
+  .campus-btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl px-5 py-3 font-semibold transition-all focus:outline-none active:scale-95 bg-gradient-to-r from-[var(--color-campus-accent)] to-[var(--color-campus-accent-light)] text-white shadow-lg shadow-[var(--color-campus-accent)]/20 hover:shadow-[var(--color-campus-accent)]/40 hover:opacity-90;
+  }
 }

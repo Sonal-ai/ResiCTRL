@@ -1,14 +1,20 @@
 import bcrypt from 'bcryptjs';
-import prisma from '../configs/prismaClient.js';
+import * as userRepository from '../models/repositories/userRepository.js';
+import { registerSchema, loginSchema } from '../models/validations/authSchemas.js';
 import { generateToken } from '../utils/generateToken.js';
 
 // @desc    Register a generic User (For attendants/wardens manually, hostellers via script)
 // @route   POST /api/auth/register
 export const registerUser = async (req, res, next) => {
   try {
-    const { email, password, role } = req.body;
+    const parsed = registerSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, message: parsed.error.issues[0].message });
+    }
 
-    const userExists = await prisma.user.findUnique({ where: { email } });
+    const { email, password, role } = parsed.data;
+
+    const userExists = await userRepository.findUserByEmail(email);
     if (userExists) {
         return res.status(400).json({ success: false, message: 'User already exists' });
     }
@@ -16,12 +22,10 @@ export const registerUser = async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        role: role || 'HOSTELLER'
-      }
+    const user = await userRepository.createUser({
+      email,
+      password: hashedPassword,
+      role: role || 'HOSTELLER'
     });
 
     generateToken(res, user.id, user.role);
@@ -39,9 +43,14 @@ export const registerUser = async (req, res, next) => {
 // @route   POST /api/auth/login
 export const loginUser = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const parsed = loginSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, message: parsed.error.issues[0].message });
+    }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const { email, password } = parsed.data;
+
+    const user = await userRepository.findUserByEmail(email);
     
     if (user && (await bcrypt.compare(password, user.password))) {
       generateToken(res, user.id, user.role);
@@ -71,10 +80,7 @@ export const logoutUser = (req, res) => {
 // @route   GET /api/auth/profile
 export const getUserProfile = async (req, res, next) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      include: { student: true } // grab attached student info if exists
-    });
+    const user = await userRepository.findUserById(req.user.id, true);
 
     if (user) {
       delete user.password;

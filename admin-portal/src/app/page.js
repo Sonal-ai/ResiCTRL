@@ -1,65 +1,103 @@
-import Image from "next/image";
+'use client';
+import { useEffect, useState } from 'react';
+import { Users, UserCheck, UserX, UserMinus, Activity, Zap, Loader2 } from 'lucide-react';
+import MetricCard from '../components/MetricCard';
+import { getDashboardMetrics, getRecentScans } from '../lib/api';
+import { format } from 'date-fns';
 
-export default function Home() {
+export default function DashboardPage() {
+  const [metrics, setMetrics] = useState({
+    totalStudents: 0,
+    studentsInside: 0,
+    studentsOutside: 0,
+    studentsOnLeave: 0
+  });
+  const [recentScans, setRecentScans] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [metricsRes, scansRes] = await Promise.all([
+          getDashboardMetrics().catch(() => ({ data: { totalStudents: 0, studentsInside: 0, studentsOutside: 0, studentsOnLeave: 0 } })),
+          getRecentScans().catch(() => ({ data: [] }))
+        ]);
+        setMetrics(metricsRes.data || metrics);
+        setRecentScans(scansRes.data || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center h-[80vh]">
+        <Loader2 className="w-8 h-8 text-[var(--color-admin-accent)] animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex flex-col gap-8">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Overview Dashboard</h1>
+        <p className="text-[var(--color-admin-muted)] text-sm">Real-time metrics and recent activity across the facility.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard title="Total Students" value={metrics.totalStudents} icon={Users} />
+        <MetricCard title="Inside Hostel" value={metrics.studentsInside} icon={UserCheck} />
+        <MetricCard title="Outside Hostel" value={metrics.studentsOutside} icon={UserX} type="danger" trend="Requires attention" />
+        <MetricCard title="On Approved Leave" value={metrics.studentsOnLeave} icon={UserMinus} />
+      </div>
+
+      <div className="admin-card mt-4 overflow-hidden">
+        <div className="p-6 border-b border-[var(--color-admin-border)] flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+            <Activity className="w-5 h-5 text-[var(--color-admin-accent)]" />
+            Recent Scans
+          </h2>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="overflow-x-auto">
+          {recentScans.length === 0 ? (
+            <div className="p-8 text-center text-[var(--color-admin-muted)]">No recent scans today</div>
+          ) : (
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#0B0D10] text-[#64748B] text-xs uppercase tracking-wider">
+                  <th className="px-6 py-4 font-medium">Student Name</th>
+                  <th className="px-6 py-4 font-medium">Roll Number</th>
+                  <th className="px-6 py-4 font-medium">Type</th>
+                  <th className="px-6 py-4 font-medium">Time</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--color-admin-border)] text-sm">
+                {recentScans.map((scan) => (
+                  <tr key={scan.id} className="hover:bg-[#20242c]/50 transition-colors">
+                    <td className="px-6 py-4 text-white font-medium">{scan.student.name}</td>
+                    <td className="px-6 py-4 text-[var(--color-admin-muted)]">{scan.student.roll_number}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        scan.type === 'ENTRY' ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]' 
+                        : 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]'
+                      }`}>
+                        {scan.type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-[var(--color-admin-muted)]">
+                      {format(new Date(scan.scan_time), 'PPp')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

@@ -8,84 +8,75 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  role      String   // HOSTELLER, ATTENDANT, WARDEN
-  student   Student?
-  
-  approvedLeaves Leave[] @relation("ApprovedLeaves")
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(uuid())
+  email          String   @unique
+  password       String
+  role           String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  approvedLeaves Leave[]  @relation("ApprovedLeaves")
+  student        Student?
 }
 
 model Student {
-  id               String   @id @default(uuid())
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id])
-  
-  name             String
-  roll_number      String   @unique
-  father_name      String?
-  dob              DateTime?
-  hostel_name      String
-  block            String?
-  floor            String?
-  room_number      String
-  phone            String
-  guardian_contact String
-  image_url        String?
-  
-  status           String   @default("active") // active/inactive
-  current_location String   @default("INSIDE") // INSIDE / OUTSIDE / ON_LEAVE
-  last_entry_time  DateTime?
-  
-  absent_without_leave_count Int @default(0)
-  total_absent_count         Int @default(0)
-
-  leaves           Leave[]
-  scanEvents       ScanEvent[]
-  attendanceRecords AttendanceRecord[]
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                         String             @id @default(uuid())
+  userId                     String             @unique
+  name                       String
+  roll_number                String             @unique
+  father_name                String?
+  dob                        DateTime?
+  hostel_name                String
+  block                      String?
+  floor                      String?
+  room_number                String
+  phone                      String
+  guardian_contact           String
+  image_url                  String?
+  status                     String             @default("active")
+  current_location           String             @default("INSIDE")
+  last_entry_time            DateTime?
+  absent_without_leave_count Int                @default(0)
+  total_absent_count         Int                @default(0)
+  createdAt                  DateTime           @default(now())
+  updatedAt                  DateTime           @updatedAt
+  attendanceRecords          AttendanceRecord[]
+  leaves                     Leave[]
+  scanEvents                 ScanEvent[]
+  user                       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Leave {
-  id             String   @id @default(uuid())
-  studentId      String
-  student        Student  @relation(fields: [studentId], references: [id])
-  
-  start_date     DateTime
-  end_date       DateTime
-  reason         String
-  status         String   @default("pending") // pending/approved/rejected
-  
-  approvedById   String?
-  approvedBy     User?    @relation("ApprovedLeaves", fields: [approvedById], references: [id])
-  
-  createdAt      DateTime @default(now())
+  id           String   @id @default(uuid())
+  studentId    String
+  start_date   DateTime
+  end_date     DateTime
+  reason       String
+  status       String   @default("pending")
+  approvedById String?
+  createdAt    DateTime @default(now())
+  approvedBy   User?    @relation("ApprovedLeaves", fields: [approvedById], references: [id])
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model ScanEvent {
   id               String   @id @default(uuid())
   studentId        String
-  student          Student  @relation(fields: [studentId], references: [id])
   timestamp        DateTime
-  type             String   // entry / exit
+  type             String
   ocr_confidence   Float?
   model_confidence Float?
   camera_id        String
   createdAt        DateTime @default(now())
+  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model AttendanceRecord {
   id        String   @id @default(uuid())
   studentId String
-  student   Student  @relation(fields: [studentId], references: [id])
-  date      DateTime // Need stable date like YYYY-MM-DD represented at 00:00 UTC
-  status    String   // PRESENT / ABSENT / ON_LEAVE
+  date      DateTime
+  status    String
   createdAt DateTime @default(now())
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, date])
 }

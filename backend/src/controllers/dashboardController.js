@@ -1,22 +1,15 @@
-import prisma from '../configs/prismaClient.js';
+import * as studentRepository from '../models/repositories/studentRepository.js';
+import * as leaveRepository from '../models/repositories/leaveRepository.js';
 
 export const getMetrics = async (req, res, next) => {
   try {
-    const totalStudents = await prisma.student.count();
+    const totalStudents = await studentRepository.countStudents();
     
-    const studentsInside = await prisma.student.count({
-      where: { current_location: 'INSIDE' }
-    });
+    const studentsInside = await studentRepository.countStudentsByLocation('INSIDE');
     
     // Students currently on approved leave
     const today = new Date();
-    const studentsOnLeave = await prisma.leave.count({
-      where: {
-        status: 'approved',
-        start_date: { lte: today },
-        end_date: { gte: today }
-      }
-    });
+    const studentsOnLeave = await leaveRepository.countActiveLeaves(today);
 
     const studentsOutside = totalStudents - studentsInside;
 
@@ -36,18 +29,7 @@ export const getCurfewViolations = async (req, res, next) => {
     const today = new Date();
     // For this example, anyone OUTSIDE and NOT on an approved leave is a violator (assuming curfew time has passed)
     // Normally you'd check if `new Date().getHours() >= 23`
-    const violators = await prisma.student.findMany({
-      where: {
-        current_location: 'OUTSIDE',
-        leaves: {
-          none: {
-            status: 'approved',
-            start_date: { lte: today },
-            end_date: { gte: today }
-          }
-        }
-      }
-    });
+    const violators = await studentRepository.findCurfewViolators(today);
 
     res.json(violators);
   } catch (error) {
