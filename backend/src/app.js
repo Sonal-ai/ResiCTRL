@@ -14,6 +14,10 @@ import authRoutes from './routes/authRoutes.js';
 
 const app = express();
 
+// ────────────────────── Vercel Proxy Trust ──────────────────────
+// Required for express-rate-limit to read X-Forwarded-For headers behind Vercel Serverless
+app.set('trust proxy', 1);
+
 // ────────────────────── Security ──────────────────────
 app.use(helmet());
 app.use(
