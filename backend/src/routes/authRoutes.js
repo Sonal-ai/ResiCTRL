@@ -10,7 +10,4 @@ router.post('/logout', logoutUser);
 
 router.get('/profile', protect, getUserProfile);
 
-// Example of purely RBAC protected endpoint:
-// router.get('/admin-only', protect, authorizeRoles('WARDEN', 'ATTENDANT'), (req, res) => res.send('Admin Data'));
-
 export default router;

@@ -8,7 +8,7 @@ router.get('/', protect, authorizeRoles('ATTENDANT', 'WARDEN'), studentControlle
 router.get('/:id', studentController.getStudentById);
 router.post('/', protect, authorizeRoles('ATTENDANT', 'WARDEN'), studentController.createStudent);
 router.put('/:id', protect, authorizeRoles('ATTENDANT', 'WARDEN'), studentController.updateStudent);
-router.delete('/:id', protect, authorizeRoles('WARDEN'), studentController.deleteStudent); // Only Warden deletes
+router.delete('/:id', protect, authorizeRoles('ATTENDANT', 'WARDEN'), studentController.deleteStudent); // Only Warden deletes
 
 // Protected image upload endpoint
 router.post('/:id/upload-image', protect, authorizeRoles('ATTENDANT', 'WARDEN'), upload.single('profileImage'), async (req, res) => {
