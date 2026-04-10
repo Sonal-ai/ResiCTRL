@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import prisma from '../../configs/prismaClient.js';
+import prisma from '../configs/prismaClient.js';
 import { z } from 'zod';
 import { generateToken } from '../utils/generateToken.js';
 

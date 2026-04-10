@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import prisma from '../../configs/prismaClient.js';
+import prisma from '../configs/prismaClient.js';
 import fs from 'fs';
 import csvParser from 'csv-parser';
 import { z } from 'zod';
