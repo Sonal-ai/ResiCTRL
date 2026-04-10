@@ -1,10 +1,11 @@
 import express from 'express';
 const router = express.Router();
 import * as leaveController from '../controllers/leaveController.js';
+import { protect, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 router.get('/', leaveController.getAllLeaves);
 router.post('/apply', leaveController.applyLeave);
-router.put('/:id/approve', leaveController.approveLeave);
-router.put('/:id/reject', leaveController.rejectLeave);
+router.put('/:id/approve', protect, authorizeRoles('WARDEN'), leaveController.approveLeave);
+router.put('/:id/reject', protect, authorizeRoles('WARDEN'), leaveController.rejectLeave);
 
 export default router;
