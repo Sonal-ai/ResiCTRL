@@ -10,6 +10,7 @@ import studentRoutes from './routes/studentRoutes.js';
 import leaveRoutes from './routes/leaveRoutes.js';
 import scanRoutes from './routes/scanRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 const app = express();
 
@@ -46,6 +47,8 @@ if (process.env.NODE_ENV === "development") {
 
 // ────────────────────── Routes ──────────────────────
 app.use("/api/health", limiter, (req, res) => res.status(200).json({ status: "OK", timestamp: new Date(), message: "Server is healthy" }));
+
+app.use("/api/auth", limiter, authRoutes);
 
 app.use("/api/students", limiter, studentRoutes);
 app.use("/api/leaves", limiter, leaveRoutes);

@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import app from './app.js';
 import prisma from './configs/prismaClient.js';
+import { configureCloudinary } from './configs/cloudinary.js';
 
 const PORT = process.env.PORT || 5000;
 
