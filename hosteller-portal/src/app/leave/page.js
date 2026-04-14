@@ -1,31 +1,41 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, FileText, Send, Loader2 } from 'lucide-react';
 import { applyLeave } from '../../lib/api';
 
 export default function ApplyLeavePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [hostellerId, setHostellerId] = useState('');
   const [formData, setFormData] = useState({
-    studentId: '1', // Default demo student
     start_date: '',
     end_date: '',
     reason: ''
   });
 
+  // Load hostellerId from localStorage on mount
+  useEffect(() => {
+    const storedId = localStorage.getItem('hostellerId');
+    if (storedId) setHostellerId(storedId);
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!hostellerId) {
+      alert('No hosteller ID found. Please log in again.');
+      return;
+    }
     setIsSubmitting(true);
     try {
       await applyLeave({
-        studentId: parseInt(formData.studentId),
+        hostellerId: hostellerId,
         start_date: new Date(formData.start_date).toISOString(),
         end_date: new Date(formData.end_date).toISOString(),
         reason: formData.reason
       });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 5000);
-      setFormData({ studentId: '1', start_date: '', end_date: '', reason: '' });
+      setFormData({ start_date: '', end_date: '', reason: '' });
     } catch (err) {
       console.error(err);
       alert('Failed to apply for leave.');
@@ -42,12 +52,12 @@ export default function ApplyLeavePage() {
       </div>
 
       {success ? (
-        <div className="campus-card bg-emerald-50 border-emerald-200 text-center py-10 animate-in fade-in zoom-in duration-300">
-          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Send className="w-8 h-8 text-emerald-600" />
+        <div className="campus-card bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-center py-10">
+          <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Send className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <h2 className="text-xl font-bold text-emerald-900 mb-2">Request Sent!</h2>
-          <p className="text-emerald-700">Your leave application has been submitted and is pending approval.</p>
+          <h2 className="text-xl font-bold text-emerald-900 dark:text-emerald-400 mb-2">Request Sent!</h2>
+          <p className="text-emerald-700 dark:text-emerald-500/80">Your leave application has been submitted and is pending approval.</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="campus-card space-y-6">

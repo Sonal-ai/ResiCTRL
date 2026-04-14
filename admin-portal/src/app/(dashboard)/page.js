@@ -78,18 +78,18 @@ export default function DashboardPage() {
               <tbody className="divide-y divide-[var(--color-admin-border)] text-sm">
                 {recentScans.map((scan) => (
                   <tr key={scan.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 font-medium text-[var(--color-admin-text)]">{scan.student.name}</td>
-                    <td className="px-6 py-4 text-[var(--color-admin-muted)]">{scan.student.roll_number}</td>
+                    <td className="px-6 py-4 font-medium text-[var(--color-admin-text)]">{scan.hosteller?.name || 'Unknown'}</td>
+                    <td className="px-6 py-4 text-[var(--color-admin-muted)]">{scan.hosteller?.roll_number || '-'}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                        scan.type === 'ENTRY' ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]' 
+                        scan.type === 'entry' ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]' 
                         : 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]'
                       }`}>
-                        {scan.type}
+                        {scan.type?.toUpperCase()}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-[var(--color-admin-muted)]">
-                      {format(new Date(scan.scan_time), 'PPp')}
+                      {format(new Date(scan.timestamp), 'PPp')}
                     </td>
                   </tr>
                 ))}

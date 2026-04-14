@@ -63,7 +63,7 @@ export default function StudentsPage() {
     <div className="flex flex-col gap-6 relative">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Students Directory</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-admin-text)] mb-1">Students Directory</h1>
           <p className="text-[var(--color-admin-muted)] text-sm">Manage student records and hostel assignments.</p>
         </div>
         <button onClick={() => setIsModalOpen(true)} className="admin-btn-primary">
@@ -98,7 +98,7 @@ export default function StudentsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#0B0D10] text-[#64748B] text-xs uppercase tracking-wider">
+                <tr className="bg-black/5 dark:bg-white/5 text-[var(--color-admin-muted)] text-xs uppercase tracking-wider">
                   <th className="px-6 py-4 font-medium">Student Info</th>
                   <th className="px-6 py-4 font-medium">Hostel Info</th>
                   <th className="px-6 py-4 font-medium">Contact</th>
@@ -108,13 +108,13 @@ export default function StudentsPage() {
               </thead>
               <tbody className="divide-y divide-[var(--color-admin-border)] text-sm">
                 {filteredStudents.map((student) => (
-                  <tr key={student.id} className="hover:bg-[#20242c]/50 transition-colors group">
+                  <tr key={student.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
                     <td className="px-6 py-4">
-                      <div className="text-white font-medium">{student.name}</div>
+                      <div className="text-[var(--color-admin-text)] font-medium">{student.name}</div>
                       <div className="text-[var(--color-admin-muted)] text-xs mt-0.5">{student.roll_number}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-white">{student.hostel_name}</div>
+                      <div className="text-[var(--color-admin-text)]">{student.hostel_name}</div>
                       <div className="text-[var(--color-admin-muted)] text-xs mt-0.5">Room {student.room_number}</div>
                     </td>
                     <td className="px-6 py-4">
@@ -123,13 +123,13 @@ export default function StudentsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                        student.is_inside ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]' : 'bg-[var(--color-danger)]/10 text-[var(--color-danger)]'
+                        student.current_location === 'INSIDE' ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]' : 'bg-[var(--color-danger)]/10 text-[var(--color-danger)]'
                       }`}>
-                        {student.is_inside ? 'Inside' : 'Outside'}
+                        {student.current_location === 'INSIDE' ? 'Inside' : 'Outside'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="p-1.5 text-[var(--color-admin-muted)] hover:text-white rounded hover:bg-[#2B303B] transition-colors">
+                      <button className="p-1.5 text-[var(--color-admin-muted)] hover:text-[var(--color-admin-text)] rounded hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                         <MoreVertical className="w-4 h-4" />
                       </button>
                     </td>
@@ -143,10 +143,10 @@ export default function StudentsPage() {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-[var(--color-admin-card)] border border-[var(--color-admin-border)] rounded-xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-[var(--color-admin-border)] bg-[#0B0D10]">
-              <h3 className="text-lg font-semibold text-white">Add New Student</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-[var(--color-admin-muted)] hover:text-white transition-colors">
+          <div className="bg-[var(--color-admin-card)] border border-[var(--color-admin-border)] rounded-xl w-full max-w-lg shadow-2xl overflow-hidden">
+            <div className="flex justify-between items-center p-6 border-b border-[var(--color-admin-border)]">
+              <h3 className="text-lg font-semibold text-[var(--color-admin-text)]">Add New Student</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-[var(--color-admin-muted)] hover:text-[var(--color-admin-text)] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>

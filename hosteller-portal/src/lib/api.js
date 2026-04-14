@@ -5,7 +5,7 @@ const api = axios.create({
   withCredentials: true
 });
 
-// Auto-inject token
+// Auto-inject token from localStorage
 api.interceptors.request.use((config) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   if (token) {
@@ -15,10 +15,12 @@ api.interceptors.request.use((config) => {
 });
 
 export const studentLogin = async (credentials) => {
-  const res = await api.post('/auth/login', credentials);
-  const token = res.data.data?.token || res.data?.token;
+  const res = await api.post('/auth/login/hosteller', credentials);
+  const token = res.data.data?.token;
   if (token) {
     localStorage.setItem('token', token);
+    // Also store the hosteller ID for API calls that need it
+    localStorage.setItem('hostellerId', res.data.data.id);
   }
   return res.data;
 };
@@ -26,6 +28,7 @@ export const studentLogin = async (credentials) => {
 export const studentLogout = () => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('token');
+    localStorage.removeItem('hostellerId');
   }
 };
 

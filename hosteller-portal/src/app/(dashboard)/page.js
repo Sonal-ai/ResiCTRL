@@ -1,18 +1,33 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Camera, MapPin, Activity, Check } from 'lucide-react';
 import { simulateScan } from '../../lib/api';
 
 export default function MobileDashboard() {
-  const [studentId, setStudentId] = useState('1'); // Demo default
+  const [hostellerId, setHostellerId] = useState('');
   const [isSimulating, setIsSimulating] = useState(false);
   const [lastScan, setLastScan] = useState(null);
 
+  // Load hostellerId from localStorage on mount
+  useEffect(() => {
+    const storedId = localStorage.getItem('hostellerId');
+    if (storedId) setHostellerId(storedId);
+  }, []);
+
   const handleScan = async (type) => {
+    if (!hostellerId) {
+      alert('No hosteller ID found. Please log in again.');
+      return;
+    }
     setIsSimulating(true);
     try {
-      const res = await simulateScan({ student_id: parseInt(studentId), type });
-      setLastScan(res.data.scan);
+      const res = await simulateScan({ 
+        hosteller_id: hostellerId, 
+        type,
+        timestamp: new Date().toISOString(),
+        camera_id: 'SIM-MOBILE-01'
+      });
+      setLastScan(res.data.scanEvent);
       setTimeout(() => setIsSimulating(false), 800);
     } catch (err) {
       console.error(err);
@@ -48,22 +63,15 @@ export default function MobileDashboard() {
           <div className="space-y-4 pt-4 border-t border-white/20">
             <p className="text-sm text-indigo-100 mb-2">Simulate ID Card Scan</p>
             <div className="flex gap-2">
-              <input 
-                type="number" 
-                value={studentId} 
-                onChange={(e) => setStudentId(e.target.value)}
-                className="w-16 bg-white/10 border border-white/20 rounded-xl px-3 text-center text-white placeholder-white/50 focus:outline-none"
-                placeholder="ID"
-              />
               <button 
-                onClick={() => handleScan('ENTRY')}
+                onClick={() => handleScan('entry')}
                 className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl py-2.5 font-medium transition-colors flex items-center justify-center gap-2"
                 disabled={isSimulating}
               >
                 Entry
               </button>
               <button 
-                onClick={() => handleScan('EXIT')}
+                onClick={() => handleScan('exit')}
                 className="flex-1 bg-black/20 hover:bg-black/30 backdrop-blur-sm rounded-xl py-2.5 font-medium transition-colors flex items-center justify-center gap-2"
                 disabled={isSimulating}
               >
@@ -89,7 +97,7 @@ export default function MobileDashboard() {
           <div>
             <h3 className="font-semibold text-emerald-900 dark:text-emerald-400">Scan Successful</h3>
             <p className="text-sm text-emerald-700 dark:text-emerald-500/80 mt-1">
-              Recorded {lastScan.type} scan at {new Date(lastScan.scan_time).toLocaleTimeString()}
+              Recorded {lastScan.type} scan at {new Date(lastScan.timestamp).toLocaleTimeString()}
             </p>
           </div>
         </div>

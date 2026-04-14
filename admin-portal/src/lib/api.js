@@ -5,7 +5,7 @@ const api = axios.create({
   withCredentials: true // For JWT cookies if used
 });
 
-// Auto-inject token
+// Auto-inject token from localStorage
 api.interceptors.request.use((config) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   if (token) {
@@ -15,8 +15,8 @@ api.interceptors.request.use((config) => {
 });
 
 export const adminLogin = async (credentials) => {
-  const res = await api.post('/auth/login', credentials);
-  const token = res.data.data?.token || res.data?.token;
+  const res = await api.post('/auth/login/admin', credentials);
+  const token = res.data.data?.token;
   if (token) {
     localStorage.setItem('token', token);
   }
@@ -37,7 +37,7 @@ export const getAllHostellers = () => api.get('/hostellers');
 // For leaves
 export const getLeaves = () => api.get('/leaves');
 export const updateLeaveStatus = (id, status) => {
-  if (status === 'APPROVED') return api.put(`/leaves/${id}/approve`);
+  if (status === 'approved') return api.put(`/leaves/${id}/approve`);
   return api.put(`/leaves/${id}/reject`);
 };
 

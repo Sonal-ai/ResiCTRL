@@ -37,12 +37,12 @@ export default function LeavesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Leave Requests</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--color-admin-text)] mb-1">Leave Requests</h1>
         <p className="text-[var(--color-admin-muted)] text-sm">Review and manage student leave applications.</p>
       </div>
 
       <div className="admin-card overflow-hidden">
-        <div className="p-4 border-b border-[var(--color-admin-border)] bg-[#0B0D10]/50 flex items-center justify-between">
+        <div className="p-4 border-b border-[var(--color-admin-border)] flex items-center justify-between">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--color-admin-muted)]">Pending Actions</h2>
         </div>
         
@@ -60,7 +60,7 @@ export default function LeavesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#0B0D10] text-[#64748B] text-xs uppercase tracking-wider">
+                <tr className="bg-black/5 dark:bg-white/5 text-[var(--color-admin-muted)] text-xs uppercase tracking-wider">
                   <th className="px-6 py-4 font-medium">Student Info</th>
                   <th className="px-6 py-4 font-medium">Duration</th>
                   <th className="px-6 py-4 font-medium">Reason</th>
@@ -70,13 +70,13 @@ export default function LeavesPage() {
               </thead>
               <tbody className="divide-y divide-[var(--color-admin-border)] text-sm">
                 {leaves.map((leave) => (
-                  <tr key={leave.id} className="hover:bg-[#20242c]/50 transition-colors">
+                  <tr key={leave.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="text-white font-medium">{leave.student.name}</div>
-                      <div className="text-[var(--color-admin-muted)] text-xs mt-0.5">{leave.student.roll_number}</div>
+                      <div className="text-[var(--color-admin-text)] font-medium">{leave.hosteller?.name || 'Unknown'}</div>
+                      <div className="text-[var(--color-admin-muted)] text-xs mt-0.5">{leave.hosteller?.roll_number || '-'}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-white text-sm">
+                      <div className="text-[var(--color-admin-text)] text-sm">
                         {format(new Date(leave.start_date), 'MMM d, yyyy')} - {format(new Date(leave.end_date), 'MMM d, yyyy')}
                       </div>
                     </td>
@@ -85,25 +85,25 @@ export default function LeavesPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        leave.status === 'APPROVED' ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]' 
-                        : leave.status === 'REJECTED' ? 'bg-[var(--color-danger)]/10 text-[var(--color-danger)]'
+                        leave.status === 'approved' ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]' 
+                        : leave.status === 'rejected' ? 'bg-[var(--color-danger)]/10 text-[var(--color-danger)]'
                         : 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]'
                       }`}>
-                        {leave.status}
+                        {leave.status?.toUpperCase()}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {leave.status === 'PENDING' ? (
+                      {leave.status === 'pending' ? (
                         <div className="flex items-center justify-end gap-2">
                           <button 
-                            onClick={() => handleUpdateStatus(leave.id, 'APPROVED')}
+                            onClick={() => handleUpdateStatus(leave.id, 'approved')}
                             className="p-1.5 text-[var(--color-success)] hover:bg-[var(--color-success)]/10 rounded transition-colors"
                             title="Approve"
                           >
                             <CheckCircle className="w-5 h-5" />
                           </button>
                           <button 
-                            onClick={() => handleUpdateStatus(leave.id, 'REJECTED')}
+                            onClick={() => handleUpdateStatus(leave.id, 'rejected')}
                             className="p-1.5 text-[var(--color-danger)] hover:bg-[var(--color-danger)]/10 rounded transition-colors"
                             title="Reject"
                           >

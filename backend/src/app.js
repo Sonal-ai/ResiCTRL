@@ -20,9 +20,14 @@ app.set('trust proxy', 1);
 
 // ────────────────────── Security ──────────────────────
 app.use(helmet());
+
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+  : ['http://localhost:3000', 'http://localhost:3001'];
+
 app.use(
     cors({
-        origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:3001'],
+        origin: allowedOrigins,
         credentials: true,
     })
 );
@@ -59,7 +64,10 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // ────────────────────── Routes ──────────────────────
-app.use("/api/health",   limiter, (req, res) => res.status(200).json({ status: "OK", timestamp: new Date(), message: "Server is healthy" }));
+app.get("/", (req, res) => res.status(200).send("Welcome to the ResiCTRL Vercel API. Append /api/health to check status."));
+
+// Fixed: Express 5 requires app.get() for simple route handlers, not app.use()
+app.get("/api/health", limiter, (req, res) => res.status(200).json({ status: "OK", timestamp: new Date(), message: "Server is healthy" }));
 
 app.use("/api/auth",     limiter, authRoutes);
 app.use("/api/hostellers", limiter, hostellerRoutes);

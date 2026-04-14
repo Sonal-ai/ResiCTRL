@@ -1,4 +1,4 @@
-import * as studentRepository from '../models/repositories/studentRepository.js';
+import * as hostellerRepository from '../models/repositories/hostellerRepository.js';
 import * as leaveRepository from '../models/repositories/leaveRepository.js';
 import * as attendanceRepository from '../models/repositories/attendanceRepository.js';
 import { startOfDay } from 'date-fns';
@@ -7,10 +7,10 @@ import { startOfDay } from 'date-fns';
 export const processDailyAttendance = async () => {
   const today = startOfDay(new Date()); // UTC midnight representation of today
   
-  const students = await studentRepository.findActiveStudents();
+  const hostellers = await hostellerRepository.findActiveHostellers();
 
-  for (const student of students) {
-    const activeLeave = await leaveRepository.findActiveLeaveForStudent(student.id, new Date());
+  for (const hosteller of hostellers) {
+    const activeLeave = await leaveRepository.findActiveLeaveForHosteller(hosteller.id, new Date());
 
     let attendanceStatus = 'ABSENT';
     let withoutLeaveIncrement = 0;
@@ -19,7 +19,7 @@ export const processDailyAttendance = async () => {
     if (activeLeave) {
       attendanceStatus = 'ON_LEAVE';
       totalAbsentIncrement = 1;
-    } else if (student.current_location === 'INSIDE') {
+    } else if (hosteller.current_location === 'INSIDE') {
       attendanceStatus = 'PRESENT';
     } else {
       attendanceStatus = 'ABSENT';
@@ -28,15 +28,15 @@ export const processDailyAttendance = async () => {
     }
 
     // Upsert the record for today
-    const existingRecord = await attendanceRepository.getAttendanceRecord(student.id, today);
+    const existingRecord = await attendanceRepository.getAttendanceRecord(hosteller.id, today);
 
     // If it doesn't already exist or wasn't processed yet
     if (!existingRecord || existingRecord.status !== attendanceStatus) {
-        await attendanceRepository.upsertAttendanceRecord(student.id, today, attendanceStatus);
+        await attendanceRepository.upsertAttendanceRecord(hosteller.id, today, attendanceStatus);
 
-        // Update student tracking metrics
+        // Update hosteller tracking metrics
         if (withoutLeaveIncrement > 0 || totalAbsentIncrement > 0) {
-            await studentRepository.updateStudent(student.id, {
+            await hostellerRepository.updateHosteller(hosteller.id, {
                 absent_without_leave_count: { increment: withoutLeaveIncrement },
                 total_absent_count: { increment: totalAbsentIncrement }
             });
@@ -44,5 +44,5 @@ export const processDailyAttendance = async () => {
     }
   }
 
-  console.log(`Processed curfew attendance for ${students.length} students on ${today}`);
+  console.log(`Processed curfew attendance for ${hostellers.length} hostellers on ${today}`);
 };
