@@ -30,6 +30,7 @@ export const adminLogout = () => {
 };
 
 export const getDashboardMetrics = () => api.get('/dashboard/metrics');
+export const getDashboardSummary = () => api.get('/dashboard/summary');
 export const getViolations = () => api.get('/dashboard/violations');
 export const getRecentScans = () => api.get('/scans/recent');
 export const getAllHostellers = () => api.get('/hostellers');
