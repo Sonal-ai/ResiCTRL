@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Search, Plus, Filter, MoreVertical, Loader2, X } from 'lucide-react';
-import { getAllHostellers, createHosteller } from '../../lib/api';
+import { getAllHostellers, createHosteller } from '../../../lib/api';
 
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);

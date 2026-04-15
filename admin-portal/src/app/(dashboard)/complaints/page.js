@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { MessageSquareWarning, CheckCircle, XCircle, Clock, Loader2, X, Search, Filter, Image as ImageIcon } from 'lucide-react';
-import { getComplaints, updateComplaintStatus } from '../../lib/api';
+import { getComplaints, updateComplaintStatus } from '../../../lib/api';
 import { format } from 'date-fns';
 
 const STATUS_COLORS = {

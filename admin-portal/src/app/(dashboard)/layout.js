@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import Sidebar from "../../components/Sidebar";
 
 export default function DashboardLayout({ children }) {
-  // Simple check if token exists, else redirect to login
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -12,13 +11,13 @@ export default function DashboardLayout({ children }) {
   }, []);
 
   return (
-    <>
+    <div className="flex h-screen overflow-hidden">
       <Sidebar />
       <main className="flex-1 h-screen overflow-y-auto bg-[var(--color-admin-bg)] p-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[1400px] mx-auto">
           {children}
         </div>
       </main>
-    </>
+    </div>
   );
 }

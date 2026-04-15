@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { CalendarDays, CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { getLeaves, updateLeaveStatus } from '../../lib/api';
+import { getLeaves, updateLeaveStatus } from '../../../lib/api';
 import { format } from 'date-fns';
 
 export default function LeavesPage() {

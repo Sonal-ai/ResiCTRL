@@ -34,8 +34,8 @@ export const registerAdmin = async (req, res) => {
       }
     });
 
-    const token = generateToken(res, admin.id, admin.designation);
-    res.status(201).json({ success: true, data: { id: admin.id, email: admin.email, role: admin.designation, token } });
+    const token = generateToken(res, admin.id, admin.designation, admin.name);
+    res.status(201).json({ success: true, data: { id: admin.id, email: admin.email, name: admin.name, role: admin.designation, token } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message || 'Server Error' });
   }
@@ -52,8 +52,8 @@ export const loginAdmin = async (req, res) => {
     const admin = await prisma.admin.findUnique({ where: { email } });
     
     if (admin && (await bcrypt.compare(password, admin.password))) {
-      const token = generateToken(res, admin.id, admin.designation);
-      res.status(200).json({ success: true, data: { id: admin.id, email: admin.email, role: admin.designation, token } });
+      const token = generateToken(res, admin.id, admin.designation, admin.name);
+      res.status(200).json({ success: true, data: { id: admin.id, email: admin.email, name: admin.name, role: admin.designation, token } });
     } else {
       res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
