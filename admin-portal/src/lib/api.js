@@ -44,5 +44,9 @@ export const updateLeaveStatus = (id, status) => {
 // For hostellers
 export const createHosteller = (data) => api.post('/hostellers', data);
 export const uploadHostellerCSV = (formData) => api.post('/hostellers/upload-csv', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+// For complaints
+export const getComplaints = (params) => api.get('/complaints', { params });
+export const getComplaintStats = () => api.get('/complaints/stats');
+export const updateComplaintStatus = (id, data) => api.put(`/complaints/${id}/status`, data);
 
 export default api;

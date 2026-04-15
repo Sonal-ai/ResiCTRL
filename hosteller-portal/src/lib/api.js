@@ -41,4 +41,8 @@ export const applyLeave = (data) => api.post('/leaves/apply', data);
 // Simulate personal scan (hosteller_id, type)
 export const simulateScan = (data) => api.post('/scans/processScan', data);
 
+// Complaints
+export const submitComplaint = (formData) => api.post('/complaints', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const getMyComplaints = () => api.get('/complaints/my');
+
 export default api;

@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Admin {
@@ -23,7 +24,8 @@ model Admin {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  approvedLeaves Leave[]  @relation("ApprovedLeaves")
+  approvedLeaves      Leave[]      @relation("ApprovedLeaves")
+  resolvedComplaints  Complaint[]  @relation("ResolvedComplaints")
 }
 
 model Hosteller {
@@ -61,6 +63,7 @@ model Hosteller {
   leaves            Leave[]
   scanEvents        ScanEvent[]
   attendanceRecords AttendanceRecord[]
+  complaints        Complaint[]
 }
 
 model Leave {
@@ -100,4 +103,21 @@ model AttendanceRecord {
   hosteller   Hosteller @relation(fields: [hostellerId], references: [id], onDelete: Cascade)
 
   @@unique([hostellerId, date])
+}
+
+model Complaint {
+  id              String    @id @default(uuid())
+  hostellerId     String
+  title           String
+  description     String
+  category        String    @default("general") // general, maintenance, hygiene, noise, food, other
+  image_url       String?   // Cloudinary URL for evidence photo
+  status          String    @default("pending") // pending, in_progress, resolved, rejected
+  admin_response  String?
+  resolvedById    String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  hosteller       Hosteller @relation(fields: [hostellerId], references: [id], onDelete: Cascade)
+  resolvedBy      Admin?    @relation("ResolvedComplaints", fields: [resolvedById], references: [id])
 }

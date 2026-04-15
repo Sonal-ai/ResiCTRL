@@ -11,6 +11,7 @@ import leaveRoutes from './routes/leaveRoutes.js';
 import scanRoutes from './routes/scanRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import complaintRoutes from './routes/complaintRoutes.js';
 
 const app = express();
 
@@ -74,6 +75,7 @@ app.use("/api/hostellers", limiter, hostellerRoutes);
 app.use("/api/leaves",   limiter, leaveRoutes);
 app.use("/api/dashboard",limiter, dashboardRoutes);
 app.use("/api/scans",    cameraLimiter, scanRoutes);
+app.use("/api/complaints", limiter, complaintRoutes);
 
 // ────────────────────── Global Error Handler ──────────────────────
 app.use((err, req, res, next) => {

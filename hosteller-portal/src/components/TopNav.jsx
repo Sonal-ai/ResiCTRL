@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, CalendarPlus, UserRound, LogOut } from 'lucide-react';
+import { Home, CalendarPlus, UserRound, LogOut, MessageSquareWarning } from 'lucide-react';
 import clsx from 'clsx';
 import { studentLogout } from '../lib/api';
 
@@ -12,6 +12,7 @@ export default function TopNav() {
   const links = [
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'Apply Leave', href: '/leave', icon: CalendarPlus },
+    { name: 'Complaints', href: '/complaints', icon: MessageSquareWarning },
   ];
 
   const handleSignOut = () => {
