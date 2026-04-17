@@ -2,6 +2,8 @@ import 'dotenv/config';
 import app from './app.js';
 import prisma from './configs/prismaClient.js';
 import { configureCloudinary } from './configs/cloudinary.js';
+import cron from 'node-cron';
+import { processDailyAttendance } from './services/attendanceEngine.js';
 
 const PORT = process.env.PORT || 5000;
 
@@ -12,6 +14,26 @@ const server = app.listen(PORT, async () => {
         console.log(`📦 Database connected successfully!`);
         configureCloudinary();
         console.log(`☁️  Cloudinary configured successfully!`);
+
+        // ── Attendance Cron Job (Phase 2.5) ──
+        // Runs daily at 11:05 PM IST (23:05). Only enabled when ENABLE_CRON=true.
+        // Not suitable for Vercel serverless — use Vercel Cron or external scheduler there.
+        if (process.env.ENABLE_CRON === 'true') {
+            cron.schedule('5 23 * * *', async () => {
+                console.log('⏰ Running daily attendance cron at 11:05 PM...');
+                try {
+                    await processDailyAttendance();
+                    console.log('✅ Daily attendance processed successfully.');
+                } catch (err) {
+                    console.error('❌ Attendance cron error:', err);
+                }
+            }, {
+                timezone: 'Asia/Kolkata'
+            });
+            console.log(`⏰ Attendance cron scheduled (daily 23:05 IST)`);
+        } else {
+            console.log(`⏰ Attendance cron DISABLED (set ENABLE_CRON=true to enable)`);
+        }
     } catch (error) {
         console.error(`❌ Database connection failed:`, error);
     }

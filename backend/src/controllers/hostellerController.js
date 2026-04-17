@@ -3,29 +3,106 @@ import prisma from '../configs/prismaClient.js';
 import fs from 'fs';
 import csvParser from 'csv-parser';
 import { z } from 'zod';
+import { parsePagination } from '../utils/pagination.js';
+import { sendSuccess, sendError, sendPaginated } from '../utils/apiResponse.js';
 
+// ── Pagination-enabled list with search + filter ──
 export const getAllHostellers = async (req, res) => {
   try {
-    const hostellers = await prisma.hosteller.findMany({ orderBy: { name: 'asc' } });
-    res.json(hostellers);
+    const { skip, take, page, limit } = parsePagination(req);
+    const search = req.query.search || '';
+    const location = req.query.location || '';
+    const hostel = req.query.hostel || '';
+
+    const where = {};
+    if (location) where.current_location = location;
+    if (hostel) where.hostel_name = { contains: hostel, mode: 'insensitive' };
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { roll_number: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [hostellers, total] = await Promise.all([
+      prisma.hosteller.findMany({
+        where,
+        orderBy: { name: 'asc' },
+        skip,
+        take,
+        // Select only needed fields — avoid returning password
+        select: {
+          id: true, roll_number: true, name: true, email: true,
+          dob: true, gender: true, phone: true, guardian_name: true,
+          guardian_contact: true, hostel_name: true, room_number: true,
+          block: true, floor: true, total_working_days: true,
+          total_present_days: true, image_url: true, status: true,
+          current_location: true, last_entry_time: true,
+          absent_without_leave_count: true, total_absent_count: true,
+          createdAt: true, updatedAt: true,
+        },
+      }),
+      prisma.hosteller.count({ where }),
+    ]);
+
+    sendPaginated(res, hostellers, total, { page, limit });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    sendError(res, error.message);
   }
 };
 
+// ── Get single hosteller with full analytics ──
 export const getHostellerById = async (req, res) => {
   try {
     const hosteller = await prisma.hosteller.findUnique({
       where: { id: req.params.id },
-      include: { leaves: true, scanEvents: { orderBy: { timestamp: 'desc' }, take: 10 } }
+      select: {
+        id: true, roll_number: true, name: true, email: true,
+        dob: true, gender: true, phone: true, guardian_name: true,
+        guardian_contact: true, hostel_name: true, room_number: true,
+        block: true, floor: true, total_working_days: true,
+        total_present_days: true, image_url: true, status: true,
+        current_location: true, last_entry_time: true,
+        absent_without_leave_count: true, total_absent_count: true,
+        createdAt: true, updatedAt: true,
+        // Include related data for profile view
+        leaves: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          select: { id: true, start_date: true, end_date: true, reason: true, status: true, createdAt: true },
+        },
+        scanEvents: {
+          orderBy: { timestamp: 'desc' },
+          take: 15,
+          select: { id: true, timestamp: true, type: true, camera_id: true, ocr_confidence: true },
+        },
+        attendanceRecords: {
+          orderBy: { date: 'desc' },
+          take: 30,
+          select: { id: true, date: true, status: true },
+        },
+        complaints: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          select: { id: true, title: true, category: true, status: true, createdAt: true },
+        },
+      }
     });
-    if (!hosteller) return res.status(404).json({ error: 'Hosteller not found' });
-    res.json(hosteller);
+    if (!hosteller) return sendError(res, 'Hosteller not found', 404);
+
+    // Compute attendance percentage
+    const attendancePercent = hosteller.total_working_days > 0
+      ? Math.round((hosteller.total_present_days / hosteller.total_working_days) * 100)
+      : null;
+
+    sendSuccess(res, { ...hosteller, attendancePercent });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    sendError(res, error.message);
   }
 };
 
+// ── Create hosteller ──
 const hostellerCreateSchema = z.object({
   name: z.string().min(2),
   roll_number: z.string().min(1),
@@ -43,17 +120,15 @@ const hostellerCreateSchema = z.object({
 
 // Helper for generating passwords
 const generatePassword = (name, dobString) => {
-  // name part (first 4 chars or full)
   const namePart = name.slice(0, 4);
-  // dob should be formatted string ideally
-  const cleanDob = dobString.replace(/[-/:\s]/g, ''); // strip non-numerics to aim for DDMMYYYY
+  const cleanDob = dobString.replace(/[-/:\s]/g, '');
   return namePart + cleanDob;
 };
 
 export const createHosteller = async (req, res) => {
   try {
     const parsed = hostellerCreateSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
+    if (!parsed.success) return sendError(res, parsed.error.issues[0].message, 400);
 
     const rawPassword = generatePassword(parsed.data.name, parsed.data.dob);
     const hashedPassword = await bcrypt.hash(rawPassword, 10);
@@ -65,15 +140,59 @@ export const createHosteller = async (req, res) => {
         password: hashedPassword
       }
     });
-    res.status(201).json({ success: true, data: hosteller });
+    sendSuccess(res, hosteller, 201);
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    sendError(res, error.message);
   }
 };
 
+// ── Update hosteller (NEW — Phase 2) ──
+const hostellerUpdateSchema = z.object({
+  name: z.string().min(2).optional(),
+  phone: z.string().optional(),
+  guardian_name: z.string().optional(),
+  guardian_contact: z.string().optional(),
+  hostel_name: z.string().min(1).optional(),
+  room_number: z.string().min(1).optional(),
+  block: z.string().optional(),
+  floor: z.string().optional(),
+  status: z.enum(['active', 'inactive']).optional(),
+});
+
+export const updateHosteller = async (req, res) => {
+  try {
+    const parsed = hostellerUpdateSchema.safeParse(req.body);
+    if (!parsed.success) return sendError(res, parsed.error.issues[0].message, 400);
+
+    // Verify hosteller exists
+    const existing = await prisma.hosteller.findUnique({ where: { id: req.params.id } });
+    if (!existing) return sendError(res, 'Hosteller not found', 404);
+
+    // Only update fields that were provided (partial update)
+    const updateData = {};
+    for (const [key, value] of Object.entries(parsed.data)) {
+      if (value !== undefined) updateData[key] = value;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return sendError(res, 'No fields to update', 400);
+    }
+
+    const updated = await prisma.hosteller.update({
+      where: { id: req.params.id },
+      data: updateData,
+    });
+
+    sendSuccess(res, updated);
+  } catch (error) {
+    sendError(res, error.message);
+  }
+};
+
+// ── Bulk CSV upload ──
 export const uploadBulkCSV = async (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ success: false, message: "No CSV file provided" });
+    return sendError(res, "No CSV file provided", 400);
   }
 
   const results = [];
@@ -124,11 +243,15 @@ export const uploadBulkCSV = async (req, res) => {
     });
 };
 
+// ── Delete hosteller ──
 export const deleteHosteller = async (req, res) => {
   try {
+    const existing = await prisma.hosteller.findUnique({ where: { id: req.params.id } });
+    if (!existing) return sendError(res, 'Hosteller not found', 404);
+
     await prisma.hosteller.delete({ where: { id: req.params.id } });
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    sendError(res, error.message);
   }
 };

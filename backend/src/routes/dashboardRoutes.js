@@ -1,9 +1,11 @@
 import express from 'express';
 const router = express.Router();
 import * as dashboardController from '../controllers/dashboardController.js';
+import { protect, authorizeRoles } from '../middlewares/authMiddleware.js';
 
-router.get('/metrics', dashboardController.getMetrics);
-router.get('/violations', dashboardController.getCurfewViolations);
-router.get('/summary', dashboardController.getDashboardSummary);
+// All dashboard routes now require authentication (previously public)
+router.get('/metrics', protect, dashboardController.getMetrics);
+router.get('/violations', protect, authorizeRoles('WARDEN', 'ATTENDANT'), dashboardController.getCurfewViolations);
+router.get('/summary', protect, dashboardController.getDashboardSummary);
 
 export default router;

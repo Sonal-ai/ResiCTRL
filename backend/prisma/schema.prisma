@@ -64,6 +64,9 @@ model Hosteller {
   scanEvents        ScanEvent[]
   attendanceRecords AttendanceRecord[]
   complaints        Complaint[]
+
+  @@index([current_location])
+  @@index([hostel_name])
 }
 
 model Leave {
@@ -78,6 +81,9 @@ model Leave {
   
   approvedBy   Admin?      @relation("ApprovedLeaves", fields: [approvedById], references: [id])
   hosteller    Hosteller   @relation(fields: [hostellerId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([hostellerId])
 }
 
 model ScanEvent {
@@ -91,6 +97,8 @@ model ScanEvent {
   createdAt        DateTime  @default(now())
   
   hosteller        Hosteller @relation(fields: [hostellerId], references: [id], onDelete: Cascade)
+
+  @@index([hostellerId])
 }
 
 model AttendanceRecord {
@@ -120,4 +128,22 @@ model Complaint {
 
   hosteller       Hosteller @relation(fields: [hostellerId], references: [id], onDelete: Cascade)
   resolvedBy      Admin?    @relation("ResolvedComplaints", fields: [resolvedById], references: [id])
+
+  @@index([status])
+  @@index([hostellerId])
+}
+
+// ── Notification System (Phase 2) ──
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String   // target user ID (admin or hosteller)
+  userType    String   // "ADMIN" or "HOSTELLER"
+  title       String
+  message     String
+  type        String   // "leave_approved", "leave_rejected", "complaint_update", "violation"
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId])
 }

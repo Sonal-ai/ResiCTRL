@@ -8,7 +8,8 @@ const adminSchema = z.object({
   password: z.string().min(6),
   name: z.string().min(2),
   phone: z.string().optional(),
-  designation: z.string().optional(),
+  designation: z.enum(['WARDEN', 'RESI_WARDEN', 'ATTENDANT']).optional(),
+  admin_key: z.string().min(1, { message: 'Admin registration key is required' }),
 });
 
 export const registerAdmin = async (req, res) => {
@@ -16,7 +17,12 @@ export const registerAdmin = async (req, res) => {
     const parsed = adminSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ success: false, message: parsed.error.issues[0].message });
 
-    const { email, password, name, phone, designation } = parsed.data;
+    const { email, password, name, phone, designation, admin_key } = parsed.data;
+
+    // ── Security: Verify admin registration key ──
+    const validKey = process.env.ADMIN_REGISTRATION_KEY;
+    if (!validKey) return res.status(503).json({ success: false, message: 'Admin registration is not configured on this server' });
+    if (admin_key !== validKey) return res.status(403).json({ success: false, message: 'Invalid admin registration key' });
 
     const exists = await prisma.admin.findUnique({ where: { email } });
     if (exists) return res.status(400).json({ success: false, message: 'Admin already exists' });

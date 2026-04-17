@@ -1,6 +1,13 @@
 import jwt from 'jsonwebtoken';
 import prisma from '../configs/prismaClient.js';
 
+/**
+ * JWT Authentication middleware.
+ * Security improvements:
+ * - No fallback secret
+ * - Differentiates expired vs invalid tokens
+ * - Returns tokenExpired flag for frontend auto-logout
+ */
 export const protect = async (req, res, next) => {
   // 1. Extract token from cookie OR Authorization header
   let token = req.cookies?.jwt;
@@ -13,8 +20,14 @@ export const protect = async (req, res, next) => {
     return res.status(401).json({ success: false, message: 'Not authorized, no token' });
   }
 
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    console.error('FATAL: JWT_SECRET is not set');
+    return res.status(500).json({ success: false, message: 'Server configuration error' });
+  }
+
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_dev_secret');
+    const decoded = jwt.verify(token, secret);
 
     // 2. Look up user from the correct table based on role stored in JWT
     let user = null;
@@ -41,8 +54,16 @@ export const protect = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    // Differentiate between expired and invalid tokens
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Token expired, please login again',
+        tokenExpired: true
+      });
+    }
     console.error('Auth middleware error:', error.message);
-    res.status(401).json({ success: false, message: 'Not authorized, token failed' });
+    res.status(401).json({ success: false, message: 'Not authorized, token invalid' });
   }
 };
 

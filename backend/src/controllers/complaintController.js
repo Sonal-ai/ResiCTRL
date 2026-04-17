@@ -1,12 +1,14 @@
 import * as complaintRepository from '../models/repositories/complaintRepository.js';
 import { createComplaintSchema, updateComplaintStatusSchema } from '../models/validations/complaintSchemas.js';
+import { sendSuccess, sendError } from '../utils/apiResponse.js';
+import { notifyComplaintUpdate } from '../services/notificationService.js';
 
 // POST /api/complaints — Hosteller submits a complaint
 export const createComplaint = async (req, res) => {
   try {
     const parsed = createComplaintSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ success: false, message: parsed.error.issues[0].message });
+      return sendError(res, parsed.error.issues[0].message, 400);
     }
 
     const complaintData = {
@@ -18,9 +20,9 @@ export const createComplaint = async (req, res) => {
     };
 
     const complaint = await complaintRepository.createComplaint(complaintData);
-    res.status(201).json({ success: true, data: complaint });
+    sendSuccess(res, complaint, 201);
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message || 'Server Error' });
+    sendError(res, error.message);
   }
 };
 
@@ -34,7 +36,7 @@ export const getAllComplaints = async (req, res) => {
     const complaints = await complaintRepository.getAllComplaints(filters);
     res.json(complaints);
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message || 'Server Error' });
+    sendError(res, error.message);
   }
 };
 
@@ -44,7 +46,7 @@ export const getMyComplaints = async (req, res) => {
     const complaints = await complaintRepository.getComplaintsByHosteller(req.user.id);
     res.json(complaints);
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message || 'Server Error' });
+    sendError(res, error.message);
   }
 };
 
@@ -54,7 +56,7 @@ export const getComplaintStats = async (req, res) => {
     const stats = await complaintRepository.countComplaintsByStatus();
     res.json(stats);
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message || 'Server Error' });
+    sendError(res, error.message);
   }
 };
 
@@ -63,12 +65,12 @@ export const updateComplaintStatus = async (req, res) => {
   try {
     const parsed = updateComplaintStatusSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ success: false, message: parsed.error.issues[0].message });
+      return sendError(res, parsed.error.issues[0].message, 400);
     }
 
     const existing = await complaintRepository.getComplaintById(req.params.id);
     if (!existing) {
-      return res.status(404).json({ success: false, message: 'Complaint not found' });
+      return sendError(res, 'Complaint not found', 404);
     }
 
     const complaint = await complaintRepository.updateComplaintStatus(
@@ -78,8 +80,11 @@ export const updateComplaintStatus = async (req, res) => {
       parsed.data.admin_response
     );
 
-    res.json({ success: true, data: complaint });
+    // Trigger notification to the hosteller
+    await notifyComplaintUpdate(existing.hostellerId, existing.title, parsed.data.status);
+
+    sendSuccess(res, complaint);
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message || 'Server Error' });
+    sendError(res, error.message);
   }
 };
