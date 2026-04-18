@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, CalendarPlus, UserRound, LogOut, MessageSquareWarning, Settings } from 'lucide-react';
+import { Home, CalendarPlus, UserRound, LogOut, MessageSquareWarning, Settings, Vote, Megaphone } from 'lucide-react';
 import clsx from 'clsx';
 import { studentLogout } from '../lib/api';
 
@@ -13,7 +13,9 @@ export default function TopNav() {
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'Apply Leave', href: '/leave', icon: CalendarPlus },
     { name: 'Complaints', href: '/complaints', icon: MessageSquareWarning },
-    { name: 'Settings', href: '/settings', icon: Settings },  // NEW — Phase 4.2
+    { name: 'Elections', href: '/elections', icon: Vote },
+    { name: 'Notices', href: '/announcements', icon: Megaphone },
+    { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
   const handleSignOut = () => {

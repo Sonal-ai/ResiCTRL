@@ -24,8 +24,9 @@ model Admin {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  approvedLeaves      Leave[]      @relation("ApprovedLeaves")
-  resolvedComplaints  Complaint[]  @relation("ResolvedComplaints")
+  approvedLeaves      Leave[]          @relation("ApprovedLeaves")
+  resolvedComplaints  Complaint[]      @relation("ResolvedComplaints")
+  announcements       Announcement[]   @relation("CreatedAnnouncements")
 }
 
 model Hosteller {
@@ -64,6 +65,8 @@ model Hosteller {
   scanEvents        ScanEvent[]
   attendanceRecords AttendanceRecord[]
   complaints        Complaint[]
+  candidacies       Candidate[]
+  votes             Vote[]
 
   @@index([current_location])
   @@index([hostel_name])
@@ -118,11 +121,11 @@ model Complaint {
   hostellerId     String
   title           String
   description     String
-  category        String    @default("GENERAL")       // WATER_ISSUES, ELECTRICITY, MESS_FOOD, FURNITURE, HYGIENE, SAFETY, GENERAL
-  subcategory     String?                              // Specific issue within the category
-  priority        String    @default("MEDIUM")         // LOW, MEDIUM, HIGH, URGENT
-  image_url       String?                              // Cloudinary URL for evidence photo
-  status          String    @default("PENDING")        // PENDING, IN_PROGRESS, RESOLVED, REJECTED
+  category        String    @default("GENERAL")
+  subcategory     String?
+  priority        String    @default("MEDIUM")
+  image_url       String?
+  status          String    @default("PENDING")
   admin_response  String?
   resolvedById    String?
   createdAt       DateTime  @default(now())
@@ -137,17 +140,97 @@ model Complaint {
   @@index([priority])
 }
 
-// ── Notification System (Phase 2) ──
+// ── Notification System ──
 model Notification {
   id          String   @id @default(uuid())
-  userId      String   // target user ID (admin or hosteller)
-  userType    String   // "ADMIN" or "HOSTELLER"
+  userId      String
+  userType    String
   title       String
   message     String
-  type        String   // "leave_approved", "leave_rejected", "complaint_update", "violation"
+  type        String
   isRead      Boolean  @default(false)
   createdAt   DateTime @default(now())
 
   @@index([userId, isRead])
   @@index([userId])
 }
+
+// ══════════════════════════════════════════════════════════════
+// ELECTION / POLLING SYSTEM
+// ══════════════════════════════════════════════════════════════
+
+model Election {
+  id          String     @id @default(uuid())
+  title       String                              // e.g. "Hostel Committee Election 2026"
+  hostel_name String                              // e.g. "Aryabhatta"
+  start_date  DateTime
+  end_date    DateTime
+  status      String     @default("UPCOMING")     // UPCOMING, ACTIVE, ENDED
+  createdById String?                             // Admin who created it
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  candidates  Candidate[]
+  votes       Vote[]
+
+  @@index([hostel_name])
+  @@index([status])
+}
+
+model Candidate {
+  id          String     @id @default(uuid())
+  hostellerId String                              // The student who is running
+  electionId  String
+  position    String                              // "President", "Mess Secretary", etc.
+  manifesto   String?                             // Campaign statement
+  createdAt   DateTime   @default(now())
+
+  hosteller   Hosteller  @relation(fields: [hostellerId], references: [id], onDelete: Cascade)
+  election    Election   @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  votes       Vote[]
+
+  @@unique([hostellerId, electionId, position])   // One candidacy per position per election
+  @@index([electionId, position])
+}
+
+model Vote {
+  id          String     @id @default(uuid())
+  voterId     String                              // Hosteller casting the vote
+  candidateId String
+  position    String                              // Denormalized for fast queries
+  electionId  String
+  createdAt   DateTime   @default(now())
+
+  voter       Hosteller  @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  candidate   Candidate  @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  election    Election   @relation(fields: [electionId], references: [id], onDelete: Cascade)
+
+  @@unique([voterId, position, electionId])       // One vote per position per election
+  @@index([electionId, position])
+  @@index([candidateId])
+}
+
+// ══════════════════════════════════════════════════════════════
+// ANNOUNCEMENT / NOTICE BOARD SYSTEM
+// ══════════════════════════════════════════════════════════════
+
+model Announcement {
+  id          String     @id @default(uuid())
+  title       String
+  content     String
+  category    String     @default("GENERAL")      // EVENT, NOTICE, URGENT, MESS, GENERAL
+  priority    String     @default("NORMAL")       // NORMAL, IMPORTANT, URGENT
+  hostel_name String?                             // null = all hostels
+  createdById String                              // Admin who created
+  expiry_date DateTime?                           // null = never expires
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  createdBy   Admin      @relation("CreatedAnnouncements", fields: [createdById], references: [id])
+
+  @@index([hostel_name])
+  @@index([category])
+  @@index([priority])
+  @@index([expiry_date])
+}
+

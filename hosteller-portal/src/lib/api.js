@@ -101,4 +101,12 @@ export const getNotifications = (params) => api.get('/notifications', { params }
 export const markNotificationRead = (id) => api.put(`/notifications/${id}/read`);
 export const markAllNotificationsRead = () => api.put('/notifications/read-all');
 
+// ── Elections API ──
+export const getActiveElection = (params) => api.get('/elections/active', { params });
+export const castVote = (data) => api.post('/elections/vote', data);
+export const getElectionResults = (id) => api.get(`/elections/${id}/results`);
+
+// ── Announcements API ──
+export const getAnnouncements = (params) => api.get('/announcements', { params });
+
 export default api;

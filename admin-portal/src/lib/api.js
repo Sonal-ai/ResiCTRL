@@ -112,4 +112,18 @@ export const markAllNotificationsRead = () => api.put('/notifications/read-all')
 export const getAttendanceRegister = (params) => api.get('/attendance/register', { params });
 export const getAttendanceDateRange = () => api.get('/attendance/date-range');
 
+// ── Elections API ──
+export const getElections = () => api.get('/elections');
+export const createElection = (data) => api.post('/elections', data);
+export const getElectionById = (id) => api.get(`/elections/${id}`);
+export const addCandidate = (electionId, data) => api.post(`/elections/${electionId}/candidates`, data);
+export const getElectionResults = (id) => api.get(`/elections/${id}/results`);
+export const updateElectionStatus = (id, data) => api.put(`/elections/${id}/status`, data);
+
+// ── Announcements API ──
+export const getAnnouncements = (params) => api.get('/announcements', { params });
+export const createAnnouncement = (data) => api.post('/announcements', data);
+export const updateAnnouncement = (id, data) => api.put(`/announcements/${id}`, data);
+export const deleteAnnouncement = (id) => api.delete(`/announcements/${id}`);
+
 export default api;
