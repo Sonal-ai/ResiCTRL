@@ -54,6 +54,16 @@ api.interceptors.response.use(
 
 // ── Auth API ──
 
+export const studentRegister = async (data) => {
+  const res = await api.post('/auth/register/hosteller', data);
+  const token = res.data.data?.token;
+  if (token) {
+    localStorage.setItem('token', token);
+    localStorage.setItem('hostellerId', res.data.data.id);
+  }
+  return res.data;
+};
+
 export const studentLogin = async (credentials) => {
   const res = await api.post('/auth/login/hosteller', credentials);
   const token = res.data.data?.token;

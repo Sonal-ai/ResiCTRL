@@ -93,8 +93,14 @@ export default function AdminLogin() {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <Link href="/" className="text-sm text-[var(--color-admin-muted)] hover:text-[var(--color-admin-accent)] transition-colors">
+        <div className="mt-6 text-center space-y-2">
+          <p className="text-sm text-[var(--color-admin-muted)]">
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="text-[var(--color-admin-accent)] hover:underline font-medium">
+              Register
+            </Link>
+          </p>
+          <Link href="/" className="block text-sm text-[var(--color-admin-muted)] hover:text-[var(--color-admin-accent)] transition-colors">
             ← Back to Home
           </Link>
         </div>

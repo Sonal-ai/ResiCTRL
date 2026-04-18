@@ -100,6 +100,15 @@ export default function HostellerLogin() {
           </div>
         </form>
 
+        <div className="mt-6 text-center">
+          <p className="text-sm text-[var(--color-campus-muted)]">
+            New student?{' '}
+            <Link href="/register" className="text-[var(--color-campus-accent)] hover:underline font-medium">
+              Create Account
+            </Link>
+          </p>
+        </div>
+
       </main>
     </div>
   );

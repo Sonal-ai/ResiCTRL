@@ -63,6 +63,15 @@ api.interceptors.response.use(
 
 // ── Auth API ──
 
+export const adminRegister = async (data) => {
+  const res = await api.post('/auth/register', data);
+  const token = res.data.data?.token;
+  if (token) {
+    localStorage.setItem('token', token);
+  }
+  return res.data;
+};
+
 export const adminLogin = async (credentials) => {
   const res = await api.post('/auth/login/admin', credentials);
   const token = res.data.data?.token;

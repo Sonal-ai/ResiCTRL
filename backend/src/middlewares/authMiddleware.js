@@ -35,7 +35,7 @@ export const protect = async (req, res, next) => {
     if (decoded.role === 'HOSTELLER') {
       user = await prisma.hosteller.findUnique({
         where: { id: decoded.userId },
-        select: { id: true, email: true, name: true, roll_number: true }
+        select: { id: true, email: true, name: true, roll_number: true, hostel_name: true }
       });
       if (user) user.role = 'HOSTELLER';
     } else {

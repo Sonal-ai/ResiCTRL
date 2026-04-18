@@ -52,16 +52,24 @@ function sanitizeDeep(obj) {
 
 /**
  * Express middleware — sanitizes req.body, req.query, req.params.
+ * Note: In Express 5, req.query and req.params are getter-only,
+ * so we sanitize their values in-place instead of reassigning.
  */
 export const sanitizeInput = (req, res, next) => {
   if (req.body && typeof req.body === 'object') {
     req.body = sanitizeDeep(req.body);
   }
+  // Express 5: req.query is getter-only — sanitize values in-place
   if (req.query && typeof req.query === 'object') {
-    req.query = sanitizeDeep(req.query);
+    for (const key of Object.keys(req.query)) {
+      req.query[key] = sanitizeDeep(req.query[key]);
+    }
   }
+  // Express 5: req.params is getter-only — sanitize values in-place
   if (req.params && typeof req.params === 'object') {
-    req.params = sanitizeDeep(req.params);
+    for (const key of Object.keys(req.params)) {
+      req.params[key] = sanitizeDeep(req.params[key]);
+    }
   }
   next();
 };

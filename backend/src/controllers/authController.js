@@ -3,6 +3,9 @@ import prisma from '../configs/prismaClient.js';
 import { z } from 'zod';
 import { generateToken } from '../utils/generateToken.js';
 
+// ── Hostels list for validation ──
+const HOSTELS = ['Aryabhatta Hostel', 'CV Raman Hostel', 'Kalpana Hostel', 'Sarojini Hostel', 'Vivekananda Hostel'];
+
 const adminSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -42,6 +45,63 @@ export const registerAdmin = async (req, res) => {
 
     const token = generateToken(res, admin.id, admin.designation, admin.name);
     res.status(201).json({ success: true, data: { id: admin.id, email: admin.email, name: admin.name, role: admin.designation, token } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message || 'Server Error' });
+  }
+};
+
+// ── Hosteller Self-Registration ──
+
+const registerHostellerSchema = z.object({
+  roll_number: z.string().min(3, 'Roll number is required'),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  dob: z.string().min(1, 'Date of birth is required'),
+  gender: z.enum(['Male', 'Female', 'Other'], { message: 'Gender must be Male, Female, or Other' }),
+  hostel_name: z.string().min(1, 'Hostel name is required'),
+  room_number: z.string().min(1, 'Room number is required'),
+  phone: z.string().min(10, 'Phone must be at least 10 digits').optional().default(''),
+  guardian_contact: z.string().optional().default(''),
+});
+
+export const registerHosteller = async (req, res) => {
+  try {
+    const parsed = registerHostellerSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ success: false, message: parsed.error.issues[0].message });
+
+    const { roll_number, name, email, password, dob, gender, hostel_name, room_number, phone, guardian_contact } = parsed.data;
+
+    // Check uniqueness
+    const existingRoll = await prisma.hosteller.findUnique({ where: { roll_number } });
+    if (existingRoll) return res.status(400).json({ success: false, message: 'Roll number already registered' });
+
+    const existingEmail = await prisma.hosteller.findUnique({ where: { email } });
+    if (existingEmail) return res.status(400).json({ success: false, message: 'Email already registered' });
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const hosteller = await prisma.hosteller.create({
+      data: {
+        roll_number,
+        name,
+        email,
+        password: hashedPassword,
+        dob: new Date(dob),
+        gender,
+        hostel_name,
+        room_number,
+        phone: phone || '',
+        guardian_contact: guardian_contact || '',
+      },
+    });
+
+    const token = generateToken(res, hosteller.id, 'HOSTELLER');
+    res.status(201).json({
+      success: true,
+      data: { id: hosteller.id, email: hosteller.email, roll_number: hosteller.roll_number, role: 'HOSTELLER', token },
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message || 'Server Error' });
   }

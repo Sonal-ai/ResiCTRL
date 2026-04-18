@@ -4,7 +4,6 @@ import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
-import hpp from 'hpp';
 
 // Security middleware
 import { sanitizeInput } from './middlewares/sanitizeMiddleware.js';
@@ -93,9 +92,17 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
-// ────────────────────── Security Middleware ──────────────────────
-// HTTP Parameter Pollution protection (prevents duplicate query params attacks)
-app.use(hpp());
+// Custom HPP protection (Express 5 compatible — req.query is getter-only)
+// Prevents HTTP parameter pollution by picking last value for duplicate params
+app.use((req, res, next) => {
+  const q = req.query;
+  for (const key of Object.keys(q)) {
+    if (Array.isArray(q[key])) {
+      q[key] = q[key][q[key].length - 1]; // Pick last value
+    }
+  }
+  next();
+});
 
 // Custom XSS sanitization on all incoming data
 app.use(sanitizeInput);
