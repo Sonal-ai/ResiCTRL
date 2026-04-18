@@ -18,6 +18,7 @@ import dashboardRoutes from './routes/dashboardRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import complaintRoutes from './routes/complaintRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import attendanceRoutes from './routes/attendanceRoutes.js';
 
 const app = express();
 
@@ -117,6 +118,7 @@ app.use("/api/dashboard",  limiter, dashboardRoutes);
 app.use("/api/scans",      cameraLimiter, scanRoutes);
 app.use("/api/complaints", limiter, complaintRoutes);
 app.use("/api/notifications", limiter, notificationRoutes);
+app.use("/api/attendance",    limiter, attendanceRoutes);
 
 // ────────────────────── Global Error Handler ──────────────────────
 // Centralized handler — replaces inline error middleware

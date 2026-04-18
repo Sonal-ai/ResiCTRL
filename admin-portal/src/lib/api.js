@@ -108,4 +108,8 @@ export const getNotifications = (params) => api.get('/notifications', { params }
 export const markNotificationRead = (id) => api.put(`/notifications/${id}/read`);
 export const markAllNotificationsRead = () => api.put('/notifications/read-all');
 
+// ── Attendance API ── (NEW)
+export const getAttendanceRegister = (params) => api.get('/attendance/register', { params });
+export const getAttendanceDateRange = () => api.get('/attendance/date-range');
+
 export default api;

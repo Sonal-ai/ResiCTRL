@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Users, CalendarSync, LogOut, ShieldAlert, MessageSquareWarning, Moon, Sun } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarSync, LogOut, ShieldAlert, MessageSquareWarning, Moon, Sun, CalendarCheck } from 'lucide-react';
 import clsx from 'clsx';
 import { adminLogout } from '../lib/api';
 import { useTheme } from 'next-themes';
@@ -31,6 +31,7 @@ export default function Sidebar() {
   const links = [
     { name: 'Overview', href: '/', icon: LayoutDashboard },
     { name: 'Students', href: '/students', icon: Users },
+    { name: 'Attendance', href: '/attendance', icon: CalendarCheck },
     { name: 'Leave Requests', href: '/leaves', icon: CalendarSync },
     { name: 'Complaints', href: '/complaints', icon: MessageSquareWarning },
   ];
