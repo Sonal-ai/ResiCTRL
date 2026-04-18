@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Vote, CheckCircle, Loader2, Trophy, Clock, Users, AlertTriangle } from 'lucide-react';
 import { getActiveElection, castVote, getElectionResults } from '../../lib/api';
+import AuthGuard from '../../components/AuthGuard';
 import { format } from 'date-fns';
 
 const POSITION_ICONS = {
@@ -73,7 +74,8 @@ export default function ElectionPage() {
   }
 
   return (
-    <div className="p-6 pb-20 flex flex-col gap-6">
+    <AuthGuard>
+    <div className="p-4 sm:p-6 md:p-8 flex flex-col gap-6">
       <div className="mt-4">
         <h1 className="text-2xl font-bold tracking-tight text-[var(--color-campus-text)] flex items-center gap-2">
           <Vote className="w-6 h-6 text-[var(--color-campus-accent)]" /> Elections
@@ -211,5 +213,6 @@ export default function ElectionPage() {
         </div>
       )}
     </div>
+    </AuthGuard>
   );
 }

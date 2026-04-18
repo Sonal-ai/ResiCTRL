@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Megaphone, Loader2, Filter } from 'lucide-react';
 import { getAnnouncements } from '../../lib/api';
+import AuthGuard from '../../components/AuthGuard';
 import { format } from 'date-fns';
 
 const CAT_STYLES = {
@@ -48,7 +49,8 @@ export default function AnnouncementsPage() {
   });
 
   return (
-    <div className="p-6 pb-20 flex flex-col gap-6">
+    <AuthGuard>
+    <div className="p-4 sm:p-6 md:p-8 flex flex-col gap-6">
       <div className="mt-4">
         <h1 className="text-2xl font-bold tracking-tight text-[var(--color-campus-text)] flex items-center gap-2">
           <Megaphone className="w-6 h-6 text-[var(--color-campus-accent)]" /> Announcements
@@ -117,5 +119,6 @@ export default function AnnouncementsPage() {
         </div>
       )}
     </div>
+    </AuthGuard>
   );
 }

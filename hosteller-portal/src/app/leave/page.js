@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Send, Loader2, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { applyLeave, getMyLeaves } from '../../lib/api';
+import AuthGuard from '../../components/AuthGuard';
 import { format } from 'date-fns';
 
 const STATUS_STYLES = {
@@ -68,7 +69,8 @@ export default function ApplyLeavePage() {
   };
 
   return (
-    <div className="p-6 pb-20 flex flex-col gap-6">
+    <AuthGuard>
+    <div className="p-4 sm:p-6 md:p-8 flex flex-col gap-6">
       <div className="mb-2 mt-4">
         <h1 className="text-2xl font-bold tracking-tight text-[var(--color-campus-text)]">Leave</h1>
         <p className="text-[var(--color-campus-muted)] text-sm mt-1">Submit a request and track your leave history.</p>
@@ -176,5 +178,6 @@ export default function ApplyLeavePage() {
         )}
       </div>
     </div>
+    </AuthGuard>
   );
 }

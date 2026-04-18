@@ -51,7 +51,7 @@ export default function HostellerRegister() {
         phone: form.phone || undefined,
         guardian_contact: form.guardian_contact || undefined,
       });
-      router.push('/');
+      router.push('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Registration failed');
     } finally {

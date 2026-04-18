@@ -48,43 +48,43 @@ const allowedOrigins = process.env.CORS_ORIGIN
   : ['http://localhost:3000', 'http://localhost:3001'];
 
 app.use(
-    cors({
-        origin: (origin, callback) => {
-          // Allow requests with no origin (mobile apps, Postman, server-to-server)
-          if (!origin) return callback(null, true);
-          if (allowedOrigins.includes(origin)) return callback(null, true);
-          callback(new Error(`Origin ${origin} not allowed by CORS`));
-        },
-        credentials: true,
-    })
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, server-to-server)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
+    credentials: true,
+  })
 );
 
 // ────────────────────── Rate Limiting ──────────────────────
 // Strict limiter for auth routes (prevent brute force)
 const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 15, // 15 login attempts per 15 min
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { statusCode: 429, message: "Too many login attempts, please try again later.", success: false },
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15, // 15 login attempts per 15 min
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { statusCode: 429, message: "Too many login attempts, please try again later.", success: false },
 });
 
 // Standard limiter for frontend dashboard and human interactions
 const limiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 100,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { statusCode: 429, message: "Too many requests, please try again later.", success: false },
+  windowMs: 60 * 1000, // 1 minute
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { statusCode: 429, message: "Too many requests, please try again later.", success: false },
 });
 
 // Generous sanity-check limit for camera hardware
 const cameraLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, 
-    max: 1000,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { statusCode: 429, message: "Camera API Hardware Limit Exceeded.", success: false },
+  windowMs: 1 * 60 * 1000,
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { statusCode: 429, message: "Camera API Hardware Limit Exceeded.", success: false },
 });
 
 // ────────────────────── Body Parsing ──────────────────────
@@ -109,9 +109,9 @@ app.use(sanitizeInput);
 
 // ────────────────────── Logging ──────────────────────
 if (process.env.NODE_ENV === "development") {
-    app.use(morgan("dev"));
+  app.use(morgan("dev"));
 } else {
-    app.use(morgan("combined"));
+  app.use(morgan("combined"));
 }
 
 // ────────────────────── Routes ──────────────────────
@@ -120,15 +120,15 @@ app.get("/", (req, res) => res.status(200).send("Welcome to the ResiCTRL Vercel 
 // Fixed: Express 5 requires app.get() for simple route handlers, not app.use()
 app.get("/api/health", limiter, (req, res) => res.status(200).json({ status: "OK", timestamp: new Date(), message: "Server is healthy" }));
 
-app.use("/api/auth",       authLimiter, authRoutes);  // Stricter rate limit on auth
+app.use("/api/auth", authLimiter, authRoutes);  // Stricter rate limit on auth
 app.use("/api/hostellers", limiter, hostellerRoutes);
-app.use("/api/leaves",     limiter, leaveRoutes);
-app.use("/api/dashboard",  limiter, dashboardRoutes);
-app.use("/api/scans",      cameraLimiter, scanRoutes);
+app.use("/api/leaves", limiter, leaveRoutes);
+app.use("/api/dashboard", limiter, dashboardRoutes);
+app.use("/api/scans", cameraLimiter, scanRoutes);
 app.use("/api/complaints", limiter, complaintRoutes);
 app.use("/api/notifications", limiter, notificationRoutes);
-app.use("/api/attendance",    limiter, attendanceRoutes);
-app.use("/api/elections",     limiter, electionRoutes);
+app.use("/api/attendance", limiter, attendanceRoutes);
+app.use("/api/elections", limiter, electionRoutes);
 app.use("/api/announcements", limiter, announcementRoutes);
 
 // ────────────────────── Global Error Handler ──────────────────────

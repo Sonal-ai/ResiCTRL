@@ -1,15 +1,14 @@
 'use client';
 import { useEffect, useState } from 'react';
-import TopNav from "../../components/TopNav";
 import { useRouter } from 'next/navigation';
-import { isTokenExpired } from '../../lib/api';
+import { isTokenExpired } from '../lib/api';
+import TopNav from './TopNav';
 
-export default function DashboardLayout({ children }) {
+export default function AuthGuard({ children }) {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check token existence AND expiry
     const token = localStorage.getItem('token');
     if (!token || isTokenExpired()) {
       localStorage.removeItem('token');
@@ -19,7 +18,6 @@ export default function DashboardLayout({ children }) {
     }
     setIsAuthenticated(true);
 
-    // Periodic token expiry check (every 60 seconds)
     const interval = setInterval(() => {
       if (isTokenExpired()) {
         localStorage.removeItem('token');
@@ -34,11 +32,14 @@ export default function DashboardLayout({ children }) {
   if (!isAuthenticated) return null;
 
   return (
-    <>
+    <div className="min-h-screen bg-[var(--color-campus-bg)]">
       <TopNav />
-      <main className="max-w-md mx-auto min-h-[calc(100vh-4rem)] bg-[var(--color-campus-bg)]">
-        {children}
+      {/* Main content area — offset for sidebar on md+, bottom padding for mobile tab bar */}
+      <main className="md:ml-64 lg:ml-72 min-h-screen pb-20 md:pb-0">
+        <div className="max-w-5xl mx-auto">
+          {children}
+        </div>
       </main>
-    </>
+    </div>
   );
 }

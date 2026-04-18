@@ -1,8 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Camera, MapPin, Activity, Check, BarChart3, Calendar, Loader2 } from 'lucide-react';
-import { simulateScan, getMyProfile } from '../../lib/api';
+import Link from 'next/link';
+import { Camera, MapPin, Activity, Check, BarChart3, Calendar, Loader2, CalendarPlus, MessageSquareWarning, Vote, Megaphone, ChevronRight } from 'lucide-react';
+import { simulateScan, getMyProfile, getMyLeaves, getMyComplaints, getAnnouncements } from '../../lib/api';
 import { format } from 'date-fns';
+import AuthGuard from '../../components/AuthGuard';
 
 export default function MobileDashboard() {
   const [hostellerId, setHostellerId] = useState('');
@@ -10,6 +12,9 @@ export default function MobileDashboard() {
   const [profileLoading, setProfileLoading] = useState(true);
   const [isSimulating, setIsSimulating] = useState(false);
   const [lastScan, setLastScan] = useState(null);
+  const [leaveCount, setLeaveCount] = useState(null);
+  const [complaintCount, setComplaintCount] = useState(null);
+  const [announcementCount, setAnnouncementCount] = useState(null);
 
   useEffect(() => {
     const storedId = localStorage.getItem('hostellerId');
@@ -27,6 +32,32 @@ export default function MobileDashboard() {
       }
     };
     fetchProfile();
+
+    // Fetch summary counts for quick links
+    const fetchCounts = async () => {
+      try {
+        const [leavesRes, complaintsRes, announcementsRes] = await Promise.allSettled([
+          getMyLeaves(),
+          getMyComplaints(),
+          getAnnouncements(),
+        ]);
+        if (leavesRes.status === 'fulfilled') {
+          const data = leavesRes.value.data?.data || leavesRes.value.data || [];
+          setLeaveCount(Array.isArray(data) ? data.filter(l => l.status === 'pending').length : 0);
+        }
+        if (complaintsRes.status === 'fulfilled') {
+          const data = complaintsRes.value.data?.data || complaintsRes.value.data || [];
+          setComplaintCount(Array.isArray(data) ? data.length : 0);
+        }
+        if (announcementsRes.status === 'fulfilled') {
+          const data = announcementsRes.value.data?.data || announcementsRes.value.data || [];
+          setAnnouncementCount(Array.isArray(data) ? data.length : 0);
+        }
+      } catch (err) {
+        console.error('Count fetch error:', err);
+      }
+    };
+    fetchCounts();
   }, []);
 
   const handleScan = async (type) => {
@@ -66,8 +97,16 @@ export default function MobileDashboard() {
       ? Math.round((profile.total_present_days / profile.total_working_days) * 100) 
       : null);
 
+  const quickLinks = [
+    { name: 'Apply Leave', href: '/leave', icon: CalendarPlus, color: 'from-blue-500 to-cyan-500', badge: leaveCount },
+    { name: 'Complaints', href: '/complaints', icon: MessageSquareWarning, color: 'from-orange-500 to-amber-500', badge: complaintCount },
+    { name: 'Elections', href: '/elections', icon: Vote, color: 'from-violet-500 to-fuchsia-500', badge: null },
+    { name: 'Notices', href: '/announcements', icon: Megaphone, color: 'from-emerald-500 to-teal-500', badge: announcementCount },
+  ];
+
   return (
-    <div className="p-6 pb-20 flex flex-col gap-6">
+    <AuthGuard>
+    <div className="p-4 sm:p-6 md:p-8 flex flex-col gap-6">
       {/* Greeting — uses real name */}
       <div className="mt-4">
         <p className="text-[var(--color-campus-muted)] flex items-center gap-2 mb-1">
@@ -149,9 +188,9 @@ export default function MobileDashboard() {
         </div>
       )}
 
-      {/* Stats Cards (NEW — real data) */}
+      {/* Stats Cards (real data) */}
       {!profileLoading && profile && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="campus-card flex flex-col items-center justify-center py-5">
             <BarChart3 className="w-5 h-5 text-[var(--color-campus-accent)] mb-2" />
             <p className={`text-2xl font-bold ${
@@ -169,7 +208,37 @@ export default function MobileDashboard() {
         </div>
       )}
 
-      {/* Recent Scans (NEW — real data) */}
+      {/* Quick Links */}
+      <div className="space-y-3">
+        <h2 className="font-semibold text-[var(--color-campus-text)] text-sm flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-campus-accent)]" /> Quick Actions
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {quickLinks.map((link) => {
+            const Icon = link.icon;
+            return (
+              <Link 
+                key={link.name}
+                href={link.href}
+                className="campus-card group hover:shadow-md transition-all flex items-center gap-3 !p-4 relative"
+              >
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${link.color} flex items-center justify-center shadow-sm shrink-0`}>
+                  <Icon className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[var(--color-campus-text)] truncate">{link.name}</p>
+                  {link.badge !== null && link.badge !== undefined && (
+                    <p className="text-xs text-[var(--color-campus-muted)]">{link.badge} active</p>
+                  )}
+                </div>
+                <ChevronRight className="w-4 h-4 text-[var(--color-campus-muted)] group-hover:text-[var(--color-campus-accent)] transition-colors shrink-0" />
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Recent Scans (real data) */}
       {profile?.scanEvents?.length > 0 && (
         <div className="campus-card overflow-hidden">
           <div className="px-5 py-3 border-b border-[var(--color-campus-border)]">
@@ -190,5 +259,6 @@ export default function MobileDashboard() {
         </div>
       )}
     </div>
+    </AuthGuard>
   );
 }

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Lock, Eye, EyeOff, Loader2, CheckCircle, User, Mail, MapPin } from 'lucide-react';
 import { changePassword, getMyProfile } from '../../lib/api';
+import AuthGuard from '../../components/AuthGuard';
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState(null);
@@ -62,7 +63,8 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="p-6 pb-20 flex flex-col gap-6">
+    <AuthGuard>
+    <div className="p-4 sm:p-6 md:p-8 flex flex-col gap-6">
       <div className="mt-4">
         <h1 className="text-2xl font-bold tracking-tight text-[var(--color-campus-text)]">Settings</h1>
         <p className="text-[var(--color-campus-muted)] text-sm mt-1">Manage your profile and security.</p>
@@ -172,5 +174,6 @@ export default function SettingsPage() {
         </button>
       </form>
     </div>
+    </AuthGuard>
   );
 }

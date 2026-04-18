@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Send, Loader2, Camera, CheckCircle, Clock, XCircle, MessageSquare, Image as ImageIcon, X, AlertTriangle, ChevronDown } from 'lucide-react';
 import { submitComplaint, getMyComplaints } from '../../lib/api';
+import AuthGuard from '../../components/AuthGuard';
 import { format } from 'date-fns';
 
 const STATUS_STYLES = {
@@ -111,7 +112,8 @@ export default function ComplaintsPage() {
   };
 
   return (
-    <div className="p-6 pb-20 flex flex-col gap-6">
+    <AuthGuard>
+    <div className="p-4 sm:p-6 md:p-8 flex flex-col gap-6">
       <div className="mt-4">
         <h1 className="text-2xl font-bold tracking-tight text-[var(--color-campus-text)]">Complaints</h1>
         <p className="text-[var(--color-campus-muted)] text-sm mt-1">Report issues and track their resolution.</p>
@@ -312,5 +314,6 @@ export default function ComplaintsPage() {
         </div>
       )}
     </div>
+    </AuthGuard>
   );
 }

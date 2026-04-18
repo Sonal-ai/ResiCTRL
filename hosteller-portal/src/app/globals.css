@@ -68,4 +68,17 @@ body {
   .campus-btn-primary {
     @apply inline-flex items-center justify-center rounded-xl px-5 py-3 font-semibold transition-all focus:outline-none active:scale-95 bg-gradient-to-r from-[var(--color-campus-accent)] to-[var(--color-campus-accent-light)] text-white shadow-lg shadow-[var(--color-campus-accent)]/20 hover:shadow-[var(--color-campus-accent)]/40 hover:opacity-90;
   }
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent body scroll bounce on iOS */
+html, body {
+  overscroll-behavior: none;
+}
+
